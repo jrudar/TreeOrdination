@@ -1,7 +1,7 @@
 """
-This module imports LANDMark and associated classifiers
+This module imports TreeOrdination
 """
 
-from .LANDMark import LANDMarkClassifier
+from .TreeOrdination import TreeOrdination
 
-__all__ = ['LANDMarkClassifier']
+__all__ = ['TreeOrdination']
