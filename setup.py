@@ -1,0 +1,22 @@
+from distutils.core import setup
+
+setup(name="TreeOrdination",
+                 version="1.0.0",
+                 author="Josip Rudar, G. Brian Golding, Stefan C. Kremer, Mehrdad Hajibabaei",
+                 author_email="rudarj@uoguelph.ca",
+                 description="Decision Tree Ensembles Utilizing Multivariate Splits Are Effective at Investigating Beta-Diversity in Medically Relevant 16S Amplicon Sequencing Data",
+                 url="https://github.com/jrudar/TreeOrdination",
+                 license = "MIT",
+                 keywords = "biomarker selection, metagenomics, metabarcoding, biomonitoring, ecological assessment, machine learning, supervised learning, unsupervised learning",
+                 packages=["TreeOrdination"],
+                 python_requires = ">=3.10",
+                 install_requires = ["numpy >= 1.22.4",
+                                     "pandas >= 1.4.3",
+                                     "sklearn >= 1.0.2",
+                                     "umap >= 0.5.3",
+                                     ],
+                 classifiers=["Programming Language :: Python :: 3.10+",
+                              "License :: MIT License",
+                              "Operating System :: OS Independent",
+                              "Topic :: Ecology :: Biomarker Selection :: Metagenomics :: Supervised Learning :: Unsupervised Learning :: Metabarcoding :: Biomonitoring :: Ecological Assessment :: Machine Learning"],
+                 )
