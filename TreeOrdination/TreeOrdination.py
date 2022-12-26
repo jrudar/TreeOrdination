@@ -10,12 +10,17 @@ from sklearn.metrics import balanced_accuracy_score
 from sklearn.utils import resample
 from sklearn.decomposition import PCA
 
+from skbio.stats.composition import multiplicative_replacement, closure, clr
+
 from umap import UMAP
 
 from LANDMark import LANDMarkClassifier
 
+from deicode.preprocessing import rclr
+from deicode.matrix_completion import MatrixCompletion
+
 #Randomization function
-def addcl2(X):
+def addcl2(X, scale, clr_trf, rclr_trf):
 
     #Resample rows
     X_resamp = resample(X, replace = True, n_samples = X.shape[0])
@@ -33,6 +38,24 @@ def addcl2(X):
     #Create merged dataset
     X_new = np.vstack((X_resamp, X_perm.transpose()))
             
+    #Scale so sum of rows is unity
+    if scale:
+        X_new = closure(X_new)
+
+    #Apply CLR ratio transformation
+    if clr_trf:
+        if scale:
+            X_new = clr(multiplicative_replacement(X_new))
+
+        else:
+            X_new = clr(multiplicative_replacement(closure(X_new)))
+
+    #Apply RCLR transformation
+    if rclr_trf:
+        X_prop_train = rclr(X_new.transpose()).transpose()
+        M = MatrixCompletion(2, max_iterations = 1000).fit(X_new)
+        X_new = M.solution
+
     return X_new, y_new
 
 #Tree Ordination class
@@ -49,7 +72,12 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
         supervised_clf = ExtraTreesClassifier(1024),
         n_iter_unsup = 20,
         unsup_n_estim = 80,
+        max_samples_tree = 75,
         n_jobs = 4,
+
+        scale = False,
+        clr_trf = False,
+        rclr_trf = False,
 
         n_neighbors = 8,
         n_components = 2,
@@ -65,7 +93,12 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
         self.supervised_clf = supervised_clf
         self.n_iter_unsup = n_iter_unsup
         self.unsup_n_estim = unsup_n_estim
+        self.max_samples_tree = max_samples_tree
         self.n_jobs = n_jobs
+
+        self.scale = scale
+        self.clr_trf = clr_trf
+        self.rclr_trf = rclr_trf
 
         self.n_neighbors = n_neighbors
         self.n_components = n_components
@@ -74,12 +107,13 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
     def get_initial_embedding(self, X):
 
         #Get an Initial LANDMark Representation
-        self.Rs = [LANDMarkClassifier(self.unsup_n_estim, use_nnet = False, n_jobs = self.n_jobs).fit(*addcl2(X)) for _ in range(self.n_iter_unsup)]
-
-        self.feature_importances_ = np.mean([clf.feature_importances_ for clf in self.Rs], axis = 0)
+        self.Rs = [LANDMarkClassifier(self.unsup_n_estim, use_nnet = False, max_samples_tree = self.max_samples_tree, n_jobs = self.n_jobs).fit(*addcl2(X, self.scale, self.clr_trf, self.rclr_trf)) for _ in range(self.n_iter_unsup)]
 
         #Get Proximity
         self.R_final = np.hstack([R.proximity(X) for R in self.Rs])
+
+        #Get feature importance scores
+        self.feature_importances_ = np.mean([clf.feature_importances_ for clf in self.Rs], axis = 0)
         
         #Get Embeddings
         self.tree_emb = UMAP(n_neighbors = self.n_neighbors,
@@ -108,20 +142,62 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
         self.p_model = clone(self.supervised_clf).fit(self.R_final, y_enc.astype(int))
 
         #Train a projection model
-        self.l_model = clone(ExtraTreesRegressor(1024)).fit(X, self.R_PCA_emb)
+        if self.scale == True or self.clr_trf == True or self.rclr_trf == True:
+            X_new = self.scale_clr(X)
+
+        else:
+            X_new = X
+
+        self.l_model = clone(ExtraTreesRegressor(1024)).fit(X_new, self.R_PCA_emb)
 
         return self
 
+    def scale_clr(self, X):
+
+        X_new = np.copy(X, order = "C")
+
+        #Scale so sum of rows is unity
+        if self.scale:
+            X_new = closure(X_new)
+
+        #Apply CLR ratio transformation
+        if self.clr_trf:
+            if self.scale:
+                X_new = clr(multiplicative_replacement(X_new))
+
+            else:
+                X_new = clr(multiplicative_replacement(closure(X_new)))
+
+        #Apply RCLR transformation
+        if self.rclr_trf:
+            X_new = rclr(X_new.transpose()).transpose()
+            M = MatrixCompletion(2, max_iterations = 1000).fit(X_new)
+            X_new = M.solution
+
+        return X_new
+
     def predict_proba(self, X):
 
-        tree_emb = np.hstack([R.proximity(X) for R in self.Rs])
+        if self.scale == True or self.clr_trf == True or self.rclr_trf == True:
+            X_new = self.scale_clr(X)
+
+        else:
+            X_new = X
+
+        tree_emb = np.hstack([R.proximity(X_new) for R in self.Rs])
         P = self.p_model.predict_proba(tree_emb)
 
         return P
 
     def predict(self, X):
 
-        tree_emb = np.hstack([R.proximity(X) for R in self.Rs])
+        if self.scale == True or self.clr_trf == True or self.rclr_trf == True:
+            X_new = self.scale_clr(X)
+
+        else:
+            X_new = X
+
+        tree_emb = np.hstack([R.proximity(X_new) for R in self.Rs])
         P = self.p_model.predict(tree_emb)
         P = self.encoded_labels.inverse_transform(P)
 
@@ -129,13 +205,25 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
 
     def transform(self, X):
 
-        tree_emb = np.hstack([R.proximity(X) for R in self.Rs])
+        if self.scale == True or self.clr_trf == True or self.rclr_trf == True:
+            X_new = self.scale_clr(X)
+
+        else:
+            X_new = X
+
+        tree_emb = np.hstack([R.proximity(X_new) for R in self.Rs])
 
         return tree_emb
 
     def emb_transform(self, X):
 
-        tree_emb = np.hstack([R.proximity(X) for R in self.Rs])
+        if self.scale == True or self.clr_trf == True or self.rclr_trf == True:
+            X_new = self.scale_clr(X)
+
+        else:
+            X_new = X
+
+        tree_emb = np.hstack([R.proximity(X_new) for R in self.Rs])
         tree_emb = self.tree_emb.transform(tree_emb)
         tree_emb = self.R_PCA.transform(tree_emb)
 
@@ -143,4 +231,10 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
 
     def approx_emb(self, X):
         
-        return self.l_model.predict(X)
+        if self.scale == True or self.clr_trf == True or self.rclr_trf == True:
+            X_new = self.scale_clr(X)
+
+        else:
+            X_new = X
+
+        return self.l_model.predict(X_new)
