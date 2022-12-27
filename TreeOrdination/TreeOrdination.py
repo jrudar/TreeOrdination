@@ -26,9 +26,9 @@ def addcl2(X, scale, clr_trf, rclr_trf):
     X_resamp = resample(X, replace = True, n_samples = X.shape[0])
 
     #Resample columns
-    X_perm = np.copy(X_resamp, "C").transpose()
+    X_perm = np.copy(X_resamp, "C")
     for col in range(X_perm.shape[0]):
-        X_perm[col] = resample(X_perm[col], replace = False, n_samples = X_perm.shape[1])
+        X_perm[:, col] = np.random.choice(X_perm[:, col], replace = False, size = X_perm.shape[0])
         
     #Create Labels
     y_new = [0 for _ in range(X_resamp.shape[0])]
