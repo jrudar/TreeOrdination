@@ -116,9 +116,6 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
 
         #Get Proximity
         self.R_final = np.hstack([R.proximity(X) for R in self.Rs])
-
-        #Get feature importance scores
-        self.feature_importances_ = np.mean([clf.feature_importances_ for clf in self.Rs], axis = 0)
         
         #Get Embeddings
         self.tree_emb = UMAP(n_neighbors = self.n_neighbors,
