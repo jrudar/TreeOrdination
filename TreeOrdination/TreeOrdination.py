@@ -25,6 +25,11 @@ def addcl2(X, scale, clr_trf, rclr_trf):
     #Resample rows
     X_resamp = resample(X, replace = True, n_samples = X.shape[0])
 
+    #Resampling can introduce features with zeros. Remove
+    zeros = np.sum(X_resamp, axis = 0)
+    zeros = np.where(zeros > 0, True, False)
+    X_resamp = X_resamp[:, zeros]
+    
     #Resample columns
     X_perm = np.copy(X_resamp, "C")
     for col in range(X_perm.shape[0]):
