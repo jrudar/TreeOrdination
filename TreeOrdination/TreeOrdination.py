@@ -36,7 +36,7 @@ def addcl2(X, scale, clr_trf, rclr_trf):
     y_new = np.asarray(y_new)
     
     #Create merged dataset
-    X_new = np.vstack((X_resamp, X_perm.transpose()))
+    X_new = np.vstack((X_resamp, X_perm))
             
     #Scale so sum of rows is unity
     if scale:
