@@ -20,7 +20,7 @@ from deicode.preprocessing import rclr
 from deicode.matrix_completion import MatrixCompletion
 
 #Randomization function
-def addcl2(X, scale, clr_trf, rclr_trf):
+def addcl2(X, scale, clr_trf, rclr_trf, exclude_col):
 
     #Resample rows
     X_resamp = resample(X, replace = True, n_samples = X.shape[0])
@@ -35,6 +35,15 @@ def addcl2(X, scale, clr_trf, rclr_trf):
     for col in range(X_perm.shape[0]):
         X_perm[:, col] = np.random.choice(X_perm[:, col], replace = False, size = X_perm.shape[0])
         
+    if exclude_col[0]:
+        X_excluded_perm = X_perm[:, -1]
+        X_perm = X_perm[:, 0:-1]
+
+        X_excluded_resa = X_resamp[:, -1]
+        X_resamp = X_resamp[:, 0:-1]
+
+        X_excluded = np.hstack((X_excluded_resa, X_excluded_perm))
+
     #Create Labels
     y_new = [0 for _ in range(X_resamp.shape[0])]
     y_new.extend([1 for _ in range(X_resamp.shape[0])])
@@ -61,6 +70,9 @@ def addcl2(X, scale, clr_trf, rclr_trf):
         M = MatrixCompletion(2, max_iterations = 1000).fit(X_new)
         X_new = M.solution
 
+    if exclude_col[0]:
+        X_new = np.hstack((X_new, X_excluded.reshape(-1,1)))
+
     return X_new, y_new
 
 #Tree Ordination class
@@ -83,6 +95,7 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
         scale = False,
         clr_trf = False,
         rclr_trf = False,
+        exclude_col = [False, 0],
 
         n_neighbors = 8,
         n_components = 2,
@@ -104,6 +117,7 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
         self.scale = scale
         self.clr_trf = clr_trf
         self.rclr_trf = rclr_trf
+        self.exclude_col = exclude_col
 
         self.n_neighbors = n_neighbors
         self.n_components = n_components
@@ -112,10 +126,10 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
     def get_initial_embedding(self, X):
 
         #Get an Initial LANDMark Representation
-        self.Rs = [LANDMarkClassifier(self.unsup_n_estim, use_nnet = False, max_samples_tree = self.max_samples_tree, n_jobs = self.n_jobs).fit(*addcl2(X, self.scale, self.clr_trf, self.rclr_trf)) for _ in range(self.n_iter_unsup)]
+        self.Rs = [LANDMarkClassifier(self.unsup_n_estim, use_nnet = False, max_samples_tree = self.max_samples_tree, n_jobs = self.n_jobs).fit(*addcl2(X, self.scale, self.clr_trf, self.rclr_trf, self.exclude_col)) for _ in range(self.n_iter_unsup)]
 
         #Get Proximity
-        self.R_final = np.hstack([R.proximity(X) for R in self.Rs])
+        self.R_final = np.hstack([R.proximity(self.scale_clr(X)) for R in self.Rs])
         
         #Get Embeddings
         self.tree_emb = UMAP(n_neighbors = self.n_neighbors,
@@ -158,6 +172,10 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
 
         X_new = np.copy(X, order = "C")
 
+        if self.exclude_col[0]:
+            X_excluded = X_new[:, -1]
+            X_new = X_new[:, 0:-1]
+
         #Scale so sum of rows is unity
         if self.scale:
             X_new = closure(X_new)
@@ -175,6 +193,9 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
             X_new = rclr(X_new.transpose()).transpose()
             M = MatrixCompletion(2, max_iterations = 1000).fit(X_new)
             X_new = M.solution
+
+        if self.exclude_col[0]:
+            X_new = np.hstack((X_new, X_excluded.reshape(-1,1)))
 
         return X_new
 
