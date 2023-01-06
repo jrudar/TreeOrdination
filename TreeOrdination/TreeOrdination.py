@@ -82,14 +82,12 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
         
         feature_names,
 
-        resample_on_y = False,
-
-        metric = "jaccard",
+        metric = "hamming",
 
         supervised_clf = ExtraTreesClassifier(1024),
-        n_iter_unsup = 20,
-        unsup_n_estim = 80,
-        max_samples_tree = 75,
+        n_iter_unsup = 5,
+        unsup_n_estim = 160,
+        max_samples_tree = 100,
         n_jobs = 4,
 
         scale = False,
@@ -103,8 +101,6 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
         
     ):
         self.feature_names = feature_names
-
-        self.resample_on_y = resample_on_y
 
         self.metric = metric
 
