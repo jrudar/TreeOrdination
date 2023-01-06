@@ -3,9 +3,9 @@ Implementation of a wrapper which creates unsupervised projections using LANDMar
 
 ### Future Work
 In the future we hope to add the following feature to TreeOrdination:
-    1) A simple interface to apply normalization and standardization procedures to the dataset
-    2) A simple interface to apply useful transformations to the dataset
-    3) The ability to exclude columns from normalization/standardization/transformation
+    1) A simple interface to apply normalization and standardization procedures to the dataset.
+    2) A simple interface to apply useful transformations to the dataset.
+    3) The ability to exclude columns from normalization/standardization/transformation.
 
 ### Install
 The LANDMark package is needed for TreeOrdination to work. It is available at: https://github.com/jrudar/LANDMark
