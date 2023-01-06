@@ -15,7 +15,7 @@ Once downloaded, go to the TreeOrdination directory and type:
 
     resample_on_y: Currently not used.
     
-    metric: str, default = "jaccard"
+    metric: str, default = "hamming"
         The metric used by UMAP to calculate the dissimilarity between 
         LANDMark embeddings.
         
@@ -23,11 +23,11 @@ Once downloaded, go to the TreeOrdination directory and type:
         The classification model used to predict the class of each sample
         using the unsupervised projections.
         
-    n_iter_unsup: int, default = 20
+    n_iter_unsup: int, default = 5
         The number of LANDMark embeddings which will be used to construct
         the final embedding.
         
-    unsup_n_estim: int, default = 80
+    unsup_n_estim: int, default = 160
         The number of decision trees in each LANDMark classifier.
         
     n_jobs: int, default = 4
@@ -41,6 +41,23 @@ Once downloaded, go to the TreeOrdination directory and type:
         
     min_dist: float, default = 0.001
         The 'min_dist' parameter of UMAP.
+        
+    scale: bool, default = False
+        Specifies if each row in X should be divided by its sum.
+        
+    clr_trf: bool, default = False
+        Specifies if the data should be center log-ratio transformed.
+        
+    rclr_trf: bool, default = False
+        Specifies if the data should be transformed using the robust centered
+        log-ratio transformation.
+        
+    exclude_col: list-like, default = [False, 0]
+        Specifies which columns should be excluded for scaling and/or
+        transformation. Currently, ff the first entry in the list is true
+        only the last column in X is excluded from transformation. This
+        behavior will change in the future so that the second entry
+        in this list will specify a list of columns to exclude.
         
     n_components: int, default = 2
         The number of components of the final unsupervised projection.
