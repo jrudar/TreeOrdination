@@ -39,6 +39,9 @@ Once downloaded, go to the TreeOrdination directory and type:
         focus more on the local structure of the data. Larger datasets will
         likely need a larger value for this parameter.
         
+    max_samples_tree: int, default = 100
+        Specifies how many samples will be used to train each LANDMark tree.
+        
     min_dist: float, default = 0.001
         The 'min_dist' parameter of UMAP.
         
