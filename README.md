@@ -2,17 +2,17 @@
 Implementation of a wrapper which creates unsupervised projections using LANDMark and UMAP.
 
 ### Input Data
-To create an instance of the TreeOrdination model you will need a NumPy array of feature names.
+    To create an instance of the TreeOrdination model you will need a NumPy array of feature names.
 
-For fitting the TreeOrdination you will need the following inputs:
-    1) A matrix, X, where rows are samples and columns are features. This should be a NumPy array.
-    2) An array, y, of target values (class labels for classification)
+    For fitting the TreeOrdination you will need the following inputs:
+        1) A NumPy array, X, where rows are samples and columns are features.
+        2) A NumPy array, y, of target values (class labels for classification)
     
 ### Future Work
-In the future we hope to add the following feature to TreeOrdination:
-    1) A simple interface to apply normalization and standardization procedures to the dataset.
-    2) A simple interface to apply useful transformations to the dataset.
-    3) The ability to exclude columns from normalization/standardization/transformation.
+    In the future we hope to add the following feature to TreeOrdination:
+        1) A simple interface to apply normalization and standardization procedures to the dataset.
+        2) A simple interface to apply useful transformations to the dataset.
+        3) The ability to exclude columns from normalization/standardization/transformation.
 
 ### Install
 The LANDMark package is needed for TreeOrdination to work. It is available at: https://github.com/jrudar/LANDMark
