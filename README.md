@@ -11,7 +11,8 @@ In the future we hope to add the following feature to TreeOrdination:
 The LANDMark package is needed for TreeOrdination to work. It is available at: https://github.com/jrudar/LANDMark
 
 Once downloaded, go to the TreeOrdination directory and type:
-    pip install .
+    `python setup.py sdist`
+    Switch into the `dist` directory and type `pip install TreeOrdination-a.b.c.tar.gz` where a, b, and c are the version numbers of the package.
     
 ### Class Parameters
     The current hyper-parameters are available for tuning.
