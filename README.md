@@ -12,7 +12,7 @@ Implementation of a wrapper which creates unsupervised projections using LANDMar
     In the future we hope to add the following feature to TreeOrdination:
         1) A simple interface to apply normalization and standardization procedures to the dataset.
         2) A simple interface to apply useful transformations to the dataset.
-        3) The ability to exclude columns from normalization/standardization/transformation.
+        3) Expand the ability to create balanced samples in cases where there is considerable class imbalance
 
 ### Install
 The LANDMark package is needed for TreeOrdination to work. It is available at: https://github.com/jrudar/LANDMark
@@ -27,7 +27,15 @@ Once downloaded, go to the TreeOrdination directory and type:
     feature_names: list-like, required
         A list of feature names.
 
-    resample_on_y: Currently not used.
+    resample_data: bool, default = False
+        Specifies if data will be re-sampled.
+        
+    resample_class: str, default = None
+        Specifies the class which will be down-sampled.
+        
+    n_resamples: int, default = None
+        Specifies how many samples (without replacement) will be
+        taken.
     
     metric: str, default = "hamming"
         The metric used by UMAP to calculate the dissimilarity between 
@@ -43,21 +51,12 @@ Once downloaded, go to the TreeOrdination directory and type:
         
     unsup_n_estim: int, default = 160
         The number of decision trees in each LANDMark classifier.
-        
-    n_jobs: int, default = 4
-        The number of processes used by LANDMark to train each classifier.
-        
-    n_neighbors: int, default = 8
-        The 'n_neighbors' parameter of UMAP. A larger value will capture
-        more of the global structure of the data while smaller values will
-        focus more on the local structure of the data. Larger datasets will
-        likely need a larger value for this parameter.
-        
+
     max_samples_tree: int, default = 100
         Specifies how many samples will be used to train each LANDMark tree.
-        
-    min_dist: float, default = 0.001
-        The 'min_dist' parameter of UMAP.
+
+    n_jobs: int, default = 4
+        The number of processes used by LANDMark to train each classifier.
         
     scale: bool, default = False
         Specifies if each row in X should be divided by its sum.
@@ -69,16 +68,23 @@ Once downloaded, go to the TreeOrdination directory and type:
         Specifies if the data should be transformed using the robust centered
         log-ratio transformation.
         
-    exclude_col: list-like, default = [False, 0]
+    exclude_col: list-like, default = [False, [0]]
         Specifies which columns should be excluded for scaling and/or
-        transformation. Currently, ff the first entry in the list is true
-        only the last column in X is excluded from transformation. This
-        behavior will change in the future so that the second entry
-        in this list will specify a list of columns to exclude.
+        transformation. If the first entry in the list is true the columns
+        specified by the second entry will be excluded from scaling.
         
+    n_neighbors: int, default = 8
+        The 'n_neighbors' parameter of UMAP. A larger value will capture
+        more of the global structure of the data while smaller values will
+        focus more on the local structure of the data. Larger datasets will
+        likely need a larger value for this parameter.
+     
     n_components: int, default = 2
         The number of components of the final unsupervised projection.
-            
+     
+    min_dist: float, default = 0.001
+        The 'min_dist' parameter of UMAP.
+              
 ### Fit Parameters
         X: NumPy array of shape (m, n) where 'm' is the number of samples and 'n'
         the number of features (features, taxa, OTUs, ASVs, etc).
@@ -118,8 +124,7 @@ Once downloaded, go to the TreeOrdination directory and type:
    
     Geurts P, Ernst D, Wehenkel L. Extremely Randomized Trees. Machine Learning. 2006;63(1):3–42.
     
-    Rudar J, Golding G.B., Kremer S.C., Hajibabaei M. Decision Tree Ensembles Utilizing 
-    Multivariate Splits Are Effective at Investigating Beta-Diversity in Medically 
-    Relevant 16S Amplicon Sequencing Data. bioRxiv 2022.03.31.486647; 
-    doi: https://doi.org/10.1101/2022.03.31.486647
+    Rudar, J., Golding, G.B., Kremer, S.C., Hajibabaei, M. (2023). Decision Tree Ensembles Utilizing 
+    Multivariate Splits Are Effective at Investigating Beta Diversity in Medically Relevant 16S Amplicon 
+    Sequencing Data. Microbiology Spectrum e02065-22.
 
