@@ -19,61 +19,104 @@ from LANDMark import LANDMarkClassifier
 from deicode.preprocessing import rclr
 from deicode.matrix_completion import MatrixCompletion
 
+def scaler(X, scale, clr_trf, rclr_trf, n_comp = 2):
+
+    #Scale so sum of rows is unity
+    if scale:
+        X_new = closure(X)
+
+        return X_new
+
+    #Apply CLR ratio transformation
+    if clr_trf:
+        if scale:
+            X_new = clr(multiplicative_replacement(X))
+
+            return X_new
+
+        else:
+            X_new = clr(multiplicative_replacement(closure(X)))
+
+            return X_new
+
+    #Apply RCLR transformation
+    if rclr_trf:
+        X_prop_train = rclr(X_new.transpose()).transpose()
+        M = MatrixCompletion(n_comp, max_iterations = 1000).fit(X)
+        X_new = M.solution
+
+        return X_new
+
+    return X
+
 #Randomization function
 def addcl2(X, scale, clr_trf, rclr_trf, exclude_col):
 
     #Resample rows
     X_resamp = resample(X, replace = True, n_samples = X.shape[0])
 
-    #Resampling can introduce features with zeros. Remove
-    zeros = np.sum(X_resamp, axis = 0)
-    zeros = np.where(zeros > 0, True, False)
-    X_resamp = X_resamp[:, zeros]
-    
-    #Resample columns
-    X_perm = np.copy(X_resamp, "C")
-    for col in range(X_perm.shape[0]):
-        X_perm[:, col] = np.random.choice(X_perm[:, col], replace = False, size = X_perm.shape[0])
-        
+    #If there are columns to exclude from scaling...
     if exclude_col[0]:
-        X_excluded_perm = X_perm[:, -1]
-        X_perm = X_perm[:, 0:-1]
 
-        X_excluded_resa = X_resamp[:, -1]
-        X_resamp = X_resamp[:, 0:-1]
+        #Exclude columns immediatly
+        excl_range = np.asarray(exclude_col[1])
 
-        X_excluded = np.hstack((X_excluded_resa, X_excluded_perm))
+        X_resamp_scale = np.delete(X_resamp, excl_range, axis = 1)
+        X_resamp_noscale = X_resamp[:, excl_range]
 
-    #Create Labels
-    y_new = [0 for _ in range(X_resamp.shape[0])]
-    y_new.extend([1 for _ in range(X_resamp.shape[0])])
-    y_new = np.asarray(y_new)
+        #Resampling can introduce features with zeros. Remove
+        zeros_scale = np.sum(X_resamp_scale, axis = 0)
+        zeros_scale = np.where(zeros_scale > 0, True, False)
+        X_resamp_scale = X_resamp_scale[:, zeros_scale]
     
-    #Create merged dataset
-    X_new = np.vstack((X_resamp, X_perm))
-            
-    #Scale so sum of rows is unity
-    if scale:
-        X_new = closure(X_new)
+        #Resample columns
+        X_perm_scale = np.copy(X_resamp_scale, "C")
+        for col in range(X_perm_scale.shape[1]):
+            X_perm_scale[:, col] = np.random.choice(X_perm_scale[:, col], replace = False, size = X_perm_scale.shape[0])
 
-    #Apply CLR ratio transformation
-    if clr_trf:
-        if scale:
-            X_new = clr(multiplicative_replacement(X_new))
+        #Scale data
+        X_resamp_scale = scaler(np.vstack((X_resamp_scale, X_perm_scale)), scale, clr_trf, rclr_trf)
 
-        else:
-            X_new = clr(multiplicative_replacement(closure(X_new)))
+        #Resampling can introduce features with zeros. Remove
+        zeros_noscale = np.sum(X_resamp_noscale, axis = 0)
+        zeros_noscale = np.where(zeros_noscale > 0, True, False)
+        X_resamp_noscale = X_resamp_noscale[:, zeros_noscale]
 
-    #Apply RCLR transformation
-    if rclr_trf:
-        X_prop_train = rclr(X_new.transpose()).transpose()
-        M = MatrixCompletion(2, max_iterations = 1000).fit(X_new)
-        X_new = M.solution
+        #Resample columns
+        X_perm_noscale = np.copy(X_resamp_noscale, "C")
+        for col in range(X_perm_noscale.shape[1]):
+            X_perm_noscale[:, col] = np.random.choice(X_perm_noscale[:, col], replace = False, size = X_perm_noscale.shape[0])
 
-    if exclude_col[0]:
-        X_new = np.hstack((X_new, X_excluded.reshape(-1,1)))
+        X_resamp_noscale = np.vstack((X_resamp_noscale, X_perm_noscale))
 
-    return X_new, y_new
+        X_new = np.hstack((X_resamp_scale, X_resamp_noscale))
+
+        #Create Labels
+        y_new = [0 for _ in range(X_resamp.shape[0])]
+        y_new.extend([1 for _ in range(X_resamp.shape[0])])
+        y_new = np.asarray(y_new)
+
+        return X_new, y_new, zeros_scale, zeros_noscale
+
+    else:
+        #Resampling can introduce features with zeros. Remove
+        zeros_scale = np.sum(X_resamp_scale, axis = 0)
+        zeros_scale = np.where(zeros_scale > 0, True, False)
+        X_resamp_scale = X_resamp_scale[:, zeros_scale]
+
+        #Resample columns
+        X_perm = np.copy(X_resamp_scale, "C")
+        for col in range(X_perm.shape[1]):
+            X_perm[:, col] = np.random.choice(X_perm[:, col], replace = False, size = X_perm.shape[0])
+
+        X_new = np.vstack((X_resamp_scale, X_perm))
+
+        #Create Labels
+        y_new = [0 for _ in range(X_resamp_scale.shape[0])]
+        y_new.extend([1 for _ in range(X_resamp_scale.shape[0])])
+        y_new = np.asarray(y_new)
+
+        return X_new, y_new, zeros_scale, np.asarray([])
 
 #Tree Ordination class
 class TreeOrdination(ClassifierMixin, BaseEstimator):
@@ -81,6 +124,10 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
         self,
         
         feature_names,
+
+        resample_data = False,
+        resample_class = None,
+        n_resamples = None,
 
         metric = "hamming",
 
@@ -102,6 +149,10 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
     ):
         self.feature_names = feature_names
 
+        self.resample_data = resample_data
+        self.resample_class = resample_class
+        self.n_resamples = n_resamples
+
         self.metric = metric
 
         self.supervised_clf = supervised_clf
@@ -121,11 +172,60 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
         
     def get_initial_embedding(self, X):
 
-        #Get an Initial LANDMark Representation
-        self.Rs = [LANDMarkClassifier(self.unsup_n_estim, use_nnet = False, max_samples_tree = self.max_samples_tree, n_jobs = self.n_jobs).fit(*addcl2(X, self.scale, self.clr_trf, self.rclr_trf, self.exclude_col)) for _ in range(self.n_iter_unsup)]
+        #Get an Initial LANDMark Representations
+        self.Rs = []
+        self.R_final = []
+        self.features_scaled = []
+        self.features_unscaled = []
 
-        #Get Proximity
-        self.R_final = np.hstack([R.proximity(self.scale_clr(X)) for R in self.Rs])
+        for i in range(self.n_iter_unsup):
+
+            #Resample
+            if self.resample_data:
+                re_loc = np.where(self.y == self.resample_class, True, False)
+                re_not_loc = np.where(self.y != self.resample_class, True, False)
+
+                X_re = X[re_loc]
+                X_not_re = X[re_not_loc]
+
+                X_re = resample(X_re, replace = False, n_samples = self.n_resamples, random_state = i)
+
+                X_prep = np.vstack((X_re, X_not_re))
+
+            else:
+                X_prep = X
+
+            #Get random features
+            X_rnd, y_rnd, scaled_features, unscaled_features = addcl2(X_prep, self.scale, self.clr_trf, self.rclr_trf, self.exclude_col)
+
+            #Save non-zero features for later use
+            self.features_scaled.append(scaled_features)
+            self.features_unscaled.append(unscaled_features)
+
+            #Train model
+            model = LANDMarkClassifier(self.unsup_n_estim, use_nnet = False, max_samples_tree = self.max_samples_tree, n_jobs = self.n_jobs).fit(X_rnd, y_rnd)
+            self.Rs.append(model)
+
+            #Get proximity
+            if self.exclude_col[0]:
+                excl_range = np.asarray(self.exclude_col[1])
+
+                X_scale = np.delete(X, excl_range, axis = 1)[:, scaled_features]
+                X_scale = scaler(X_scale, self.scale, self.clr_trf, self.rclr_trf)
+
+                X_noscale = X[:, excl_range][:, unscaled_features]
+
+                X_reduced = np.hstack((X_scale, X_noscale))
+
+            else:
+                X_reduced = X[:, scaled_features]
+                X_reduced = scaler(X_reduced, self.scale, self.clr_trf, self.rclr_trf)
+
+            proximity = model.proximity(X_reduced)
+            self.R_final.append(proximity)
+
+        #Get Overall Proximity
+        self.R_final = np.hstack(self.R_final)
         
         #Get Embeddings
         self.tree_emb = UMAP(n_neighbors = self.n_neighbors,
@@ -154,106 +254,219 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
         self.p_model = clone(self.supervised_clf).fit(self.R_final, y_enc.astype(int))
 
         #Train a projection model
-        if self.scale == True or self.clr_trf == True or self.rclr_trf == True:
-            X_new = self.scale_clr(X)
+        if self.exclude_col[0]:
+            excl_range = np.asarray(self.exclude_col[1])
+
+            X_scale = np.delete(X, excl_range, axis = 1)
+            X_scale = scaler(X_scale, self.scale, self.clr_trf, self.rclr_trf)
+
+            X_noscale = X[:, excl_range]
+
+            X_reduced = np.hstack((X_scale, X_noscale))
 
         else:
-            X_new = X
+            X_reduced = scaler(X, self.scale, self.clr_trf, self.rclr_trf)
 
-        self.l_model = clone(ExtraTreesRegressor(1024)).fit(X_new, self.R_PCA_emb)
+        self.l_model = clone(ExtraTreesRegressor(1024)).fit(X_reduced, self.R_PCA_emb)
 
         return self
 
-    def scale_clr(self, X):
-
-        X_new = np.copy(X, order = "C")
-
-        if self.exclude_col[0]:
-            X_excluded = X_new[:, -1]
-            X_new = X_new[:, 0:-1]
-
-        #Scale so sum of rows is unity
-        if self.scale:
-            X_new = closure(X_new)
-
-        #Apply CLR ratio transformation
-        if self.clr_trf:
-            if self.scale:
-                X_new = clr(multiplicative_replacement(X_new))
-
-            else:
-                X_new = clr(multiplicative_replacement(closure(X_new)))
-
-        #Apply RCLR transformation
-        if self.rclr_trf:
-            X_new = rclr(X_new.transpose()).transpose()
-            M = MatrixCompletion(2, max_iterations = 1000).fit(X_new)
-            X_new = M.solution
-
-        if self.exclude_col[0]:
-            X_new = np.hstack((X_new, X_excluded.reshape(-1,1)))
-
-        return X_new
-
     def predict_proba(self, X):
 
-        if self.scale == True or self.clr_trf == True or self.rclr_trf == True:
-            X_new = self.scale_clr(X)
+        tree_emb = []
 
-        else:
-            X_new = X
+        for i in range(self.n_iter_unsup):
 
-        tree_emb = np.hstack([R.proximity(X_new) for R in self.Rs])
+            #Grab locations of non-zero features
+            scaled_features = self.features_scaled[i]
+            unscaled_features = self.features_unscaled[i]
+
+            #Train model
+            model = self.Rs[i]
+
+            #Get proximity
+            if self.exclude_col[0]:
+                excl_range = np.asarray(self.exclude_col[1])
+
+                X_scale = np.delete(X, excl_range, axis = 1)[:, scaled_features]
+
+                if X_scale.ndim == 1:
+                    X_scale = np.asarray([X_scale])
+
+                X_scale = scaler(X_scale, self.scale, self.clr_trf, self.rclr_trf)
+                
+                if X_scale.ndim == 1:
+                    X_scale = np.asarray([X_scale])
+
+                X_noscale = X[:, excl_range][:, unscaled_features]
+
+                X_reduced = np.hstack((X_scale, X_noscale))
+
+            else:
+                X_reduced = X[:, scaled_features]
+                X_reduced = scaler(X_reduced, self.scale, self.clr_trf, self.rclr_trf)
+
+            proximity = model.proximity(X_reduced)
+
+            tree_emb.append(proximity)
+
+        tree_emb = np.hstack(tree_emb)
+
         P = self.p_model.predict_proba(tree_emb)
 
         return P
 
     def predict(self, X):
 
-        if self.scale == True or self.clr_trf == True or self.rclr_trf == True:
-            X_new = self.scale_clr(X)
+        tree_emb = []
 
-        else:
-            X_new = X
+        for i in range(self.n_iter_unsup):
 
-        tree_emb = np.hstack([R.proximity(X_new) for R in self.Rs])
+            #Grab locations of non-zero features
+            scaled_features = self.features_scaled[i]
+            unscaled_features = self.features_unscaled[i]
+
+            #Train model
+            model = self.Rs[i]
+
+            #Get proximity
+            if self.exclude_col[0]:
+                excl_range = np.asarray(self.exclude_col[1])
+
+                X_scale = np.delete(X, excl_range, axis = 1)[:, scaled_features]
+
+                if X_scale.ndim == 1:
+                    X_scale = np.asarray([X_scale])
+
+                X_scale = scaler(X_scale, self.scale, self.clr_trf, self.rclr_trf)
+                
+                if X_scale.ndim == 1:
+                    X_scale = np.asarray([X_scale])
+
+                X_noscale = X[:, excl_range][:, unscaled_features]
+
+                X_reduced = np.hstack((X_scale, X_noscale))
+
+            else:
+                X_reduced = X[:, scaled_features]
+                X_reduced = scaler(X_reduced, self.scale, self.clr_trf, self.rclr_trf)
+
+            proximity = model.proximity(X_reduced)
+
+            tree_emb.append(proximity)
+
+        tree_emb = np.hstack(tree_emb)
+
         P = self.p_model.predict(tree_emb)
+        
         P = self.encoded_labels.inverse_transform(P)
 
         return P
 
     def transform(self, X):
 
-        if self.scale == True or self.clr_trf == True or self.rclr_trf == True:
-            X_new = self.scale_clr(X)
+        tree_emb = []
 
-        else:
-            X_new = X
+        for i in range(self.n_iter_unsup):
 
-        tree_emb = np.hstack([R.proximity(X_new) for R in self.Rs])
+            #Grab locations of non-zero features
+            scaled_features = self.features_scaled[i]
+            unscaled_features = self.features_unscaled[i]
+
+            #Train model
+            model = self.Rs[i]
+
+            #Get proximity
+            if self.exclude_col[0]:
+                excl_range = np.asarray(self.exclude_col[1])
+
+                X_scale = np.delete(X, excl_range, axis = 1)[:, scaled_features]
+
+                if X_scale.ndim == 1:
+                    X_scale = np.asarray([X_scale])
+
+                X_scale = scaler(X_scale, self.scale, self.clr_trf, self.rclr_trf)
+                
+                if X_scale.ndim == 1:
+                    X_scale = np.asarray([X_scale])
+
+                X_noscale = X[:, excl_range][:, unscaled_features]
+
+                X_reduced = np.hstack((X_scale, X_noscale))
+
+            else:
+                X_reduced = X[:, scaled_features]
+                X_reduced = scaler(X_reduced, self.scale, self.clr_trf, self.rclr_trf)
+
+            proximity = model.proximity(X_reduced)
+
+            tree_emb.append(proximity)
+
+        tree_emb = np.hstack(tree_emb)
 
         return tree_emb
 
     def emb_transform(self, X):
 
-        if self.scale == True or self.clr_trf == True or self.rclr_trf == True:
-            X_new = self.scale_clr(X)
+        tree_emb = []
 
-        else:
-            X_new = X
+        for i in range(self.n_iter_unsup):
 
-        tree_emb = np.hstack([R.proximity(X_new) for R in self.Rs])
+            #Grab locations of non-zero features
+            scaled_features = self.features_scaled[i]
+            unscaled_features = self.features_unscaled[i]
+
+            #Train model
+            model = self.Rs[i]
+
+            #Get proximity
+            if self.exclude_col[0]:
+                excl_range = np.asarray(self.exclude_col[1])
+
+                X_scale = np.delete(X, excl_range, axis = 1)[:, scaled_features]
+
+                if X_scale.ndim == 1:
+                    X_scale = np.asarray([X_scale])
+
+                X_scale = scaler(X_scale, self.scale, self.clr_trf, self.rclr_trf)
+                
+                if X_scale.ndim == 1:
+                    X_scale = np.asarray([X_scale])
+
+                X_noscale = X[:, excl_range][:, unscaled_features]
+
+                X_reduced = np.hstack((X_scale, X_noscale))
+
+            else:
+                X_reduced = X[:, scaled_features]
+                X_reduced = scaler(X_reduced, self.scale, self.clr_trf, self.rclr_trf)
+
+            proximity = model.proximity(X_reduced)
+
+            tree_emb.append(proximity)
+
+        tree_emb = np.hstack(tree_emb)
+
         tree_emb = self.tree_emb.transform(tree_emb)
+        
         tree_emb = self.R_PCA.transform(tree_emb)
 
         return tree_emb
 
     def approx_emb(self, X):
         
-        if self.scale == True or self.clr_trf == True or self.rclr_trf == True:
-            X_new = self.scale_clr(X)
+        #Train a projection model
+        if self.exclude_col[0]:
+            excl_range = np.asarray(self.exclude_col[1])
+
+            X_scale = np.asarray([np.delete(X, excl_range, axis = 1)])
+            X_scale = np.asarray([scaler(X_scale, self.scale, self.clr_trf, self.rclr_trf)])
+
+            X_noscale = X[:, excl_range]
+
+            X_reduced = np.hstack((X_scale, X_noscale))
 
         else:
-            X_new = X
+            X_reduced = scaler(X, self.scale, self.clr_trf, self.rclr_trf)
 
-        return self.l_model.predict(X_new)
+        return self.l_model.predict(X_reduced)
