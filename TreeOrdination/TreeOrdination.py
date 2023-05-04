@@ -100,9 +100,9 @@ def addcl2(X, scale, clr_trf, rclr_trf, exclude_col):
 
     else:
         #Resampling can introduce features with zeros. Remove
-        zeros_scale = np.sum(X_resamp_scale, axis = 0)
+        zeros_scale = np.sum(X_resamp, axis = 0)
         zeros_scale = np.where(zeros_scale > 0, True, False)
-        X_resamp_scale = X_resamp_scale[:, zeros_scale]
+        X_resamp_scale = X_resamp[:, zeros_scale]
 
         #Resample columns
         X_perm = np.copy(X_resamp_scale, "C")
