@@ -32,27 +32,23 @@ def test_transformers():
     X_non_neg = np.abs(X)
 
     # Ensures that the NoScale transformer returns the input
-    R = NoTransform().fit_transform(X)
-
+    R = pd.DataFrame(NoTransform().fit_transform(X))
     X = pd.DataFrame(X)
-    R = pd.DataFrame(R)
     pd.testing.assert_frame_equal(X, R, check_dtype = False)
 
     # Ensures that CLRTransformer returns the CLR Transform of X
-    R = pd.DataFrame(CLRClosureTransformer(do_clr = True).fit_transform(X))
+    R = pd.DataFrame(CLRClosureTransformer(do_clr = True).fit_transform(X_non_neg))
 
-    X_clr = pd.DataFrame(clr(multiplicative_replacement(closure(X))))
+    X_clr = pd.DataFrame(clr(multiplicative_replacement(closure(X_non_neg))))
     pd.testing.assert_frame_equal(X_clr, R, check_dtype = False)
 
     # Ensures that CLRTransformer returns the Closure of X
-    R = pd.DataFrame(CLRClosureTransformer(do_clr = False).fit_transform(X))
-
-    X_closure = pd.DataFrame(closure(X))
+    R = pd.DataFrame(CLRClosureTransformer(do_clr = False).fit_transform(X_non_neg))
+    X_closure = pd.DataFrame(closure(X_non_neg))
     pd.testing.assert_frame_equal(X_closure, R, check_dtype = False)
 
     # Ensures that NoResample returns the input
     R = pd.DataFrame(NoResample().fit_transform(X))
-
     pd.testing.assert_frame_equal(X, R, check_dtype = False)
 
 
