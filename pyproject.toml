@@ -36,6 +36,7 @@ dependencies = [
     "scikit-bio >= 0.5.8",
     "umap-learn >= 0.5.3",
     "imbalanced-learn >= 0.10.1"
+    "dice-ml >= 0.9"
 ]
 
 [project.urls]
