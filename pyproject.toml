@@ -37,6 +37,9 @@ dependencies = [
     "umap-learn >= 0.5.3",
     "imbalanced-learn >= 0.10.1",
     "dice-ml >= 0.9",
+    "seaborn",
+    "alibi[ray] >= 0.9.0",
+    "LANDMark@git+https://github.com/jrudar/LANDMark.git", # install from GitHub main branch
 ]
 
 [project.urls]
