@@ -7,9 +7,7 @@ The LANDMark package is needed for TreeOrdination to work. It is available at: h
 ### Install
 From PyPI:
 
-```bash
-pip install triglav
-```
+Comming Soon
 
 From source:
 
