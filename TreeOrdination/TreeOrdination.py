@@ -55,7 +55,7 @@ def addcl2(X, transformer, exclude_col):
 
         # Remove zero-variance features (for data which will not be transformed)
         zero_var_notrf.fit(X_resamp_noscale)
-        zeros_noscale = np.where(zero_var_notrf.variances_ > 0, True, Fasle)
+        zeros_noscale = np.where(zero_var_notrf.variances_ > 0, True, False)
 
         X_resamp_noscale = X_resamp_noscale[:, zeros_noscale]
 
