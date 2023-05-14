@@ -1,0 +1,74 @@
+[project]
+name = "TreeOrdination"
+version = "1.1.0"
+authors = [
+    {name = "Josip Rudar", email = "rudarj@uoguelph.ca"},
+    {name = "G. Brian Golding"},
+    {name = "Stefan C. Kremer"},
+    {name = "Mehrdad Hajibabaei", email = "mhajibab@uoguelph.ca"}
+]
+description = "Projection of High-Dimensional Data Using Multivariate Decision Trees and UMAP"
+keywords = [
+    "ecology",
+    "multivariate statistics",
+    "dimensionality reduction",
+]
+license = {file = "LICENSE"}
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Ecology :: Multivariate Statistics :: Dimensionality Reduction",
+]
+dependencies = [
+    "numpy == 1.23.5",
+    "scikit-learn >= 1.1.2",
+    "scikit-bio >= 0.5.8",
+    "umap-learn >= 0.5.3",
+    "imbalanced-learn >= 0.10.1",
+    "dice-ml >= 0.9",
+    "seaborn",
+    "alibi[ray] >= 0.9.0",
+    "LANDMark@git+https://github.com/jrudar/LANDMark.git", # install from GitHub main branch
+]
+
+[project.urls]
+"Homepage" = "https://github.com/jrudar/TreeOrdination"
+"Repository" = "https://github.com/jrudar/TreeOrdination.git"
+"Bug Tracker" = "https://github.com/jrudar/TreeOrdination/issues"
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "mypy",
+    "ruff",
+    "twine",
+    "wheel",
+]
+test = [
+    "pytest",
+    "pytest-cov"
+]
+
+[tool.setuptools]
+py-modules = ["TreeOrdination"]
+
+[tool.pytest.ini_options]
+addopts = "--cov --cov-report html --cov-report term-missing --cov-fail-under 70"
+
+[tool.coverage.run]
+source = ["TreeOrdination"]
+
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools", "wheel"]
