@@ -45,30 +45,30 @@ pip install .
         pca_projection = tree_ord.R_PCA_emb      
 
 ### Notebooks and Other Examples
-    Comming Soon.
-    When available, examples of how to use `TreeOrdination` will be found [here](notebooks/README.md).
+Comming Soon.
+When available, examples of how to use `TreeOrdination` will be found [here](notebooks/README.md).
 
 ### Interface
-    An overview of the API can be found [here](docs/API.md).
+An overview of the API can be found [here](docs/API.md).
 
 ### Contributing
-    To contribute to the development of `TreeOrdination` please read our [contributing guide](docs/CONTRIBUTING.md)
+To contribute to the development of `TreeOrdination` please read our [contributing guide](docs/CONTRIBUTING.md)
 
 ### References
 
-    Rudar, J., Porter, T.M., Wright, M., Golding G.B., Hajibabaei, M. LANDMark: an ensemble 
-    approach to the supervised selection of biomarkers in high-throughput sequencing data. 
-    BMC Bioinformatics 23, 110 (2022). https://doi.org/10.1186/s12859-022-04631-z
+Rudar, J., Porter, T.M., Wright, M., Golding G.B., Hajibabaei, M. LANDMark: an ensemble 
+approach to the supervised selection of biomarkers in high-throughput sequencing data. 
+BMC Bioinformatics 23, 110 (2022). https://doi.org/10.1186/s12859-022-04631-z
 
-    Pedregosa F, Varoquaux G, Gramfort A, Michel V, Thirion B, Grisel O, et al. Scikit-learn: 
-    Machine Learning in Python. Journal of Machine Learning Research. 2011;12:2825–30. 
+Pedregosa F, Varoquaux G, Gramfort A, Michel V, Thirion B, Grisel O, et al. Scikit-learn: 
+Machine Learning in Python. Journal of Machine Learning Research. 2011;12:2825–30. 
    
-    Geurts P, Ernst D, Wehenkel L. Extremely Randomized Trees. Machine Learning. 2006;63(1):3–42.
+Geurts P, Ernst D, Wehenkel L. Extremely Randomized Trees. Machine Learning. 2006;63(1):3–42.
     
-    Rudar, J., Golding, G.B., Kremer, S.C., Hajibabaei, M. (2023). Decision Tree Ensembles Utilizing 
-    Multivariate Splits Are Effective at Investigating Beta Diversity in Medically Relevant 16S Amplicon 
-    Sequencing Data. Microbiology Spectrum e02065-22.
+Rudar, J., Golding, G.B., Kremer, S.C., Hajibabaei, M. (2023). Decision Tree Ensembles Utilizing 
+Multivariate Splits Are Effective at Investigating Beta Diversity in Medically Relevant 16S Amplicon 
+Sequencing Data. Microbiology Spectrum e02065-22.
 
-    Klaise J., Van Looveren A., Vacanti G., and Coca A. Alibi Explain: Algorithms for Explaining Machine
-    Learning Models. Journal of Machine Learning Research. 2021;22(181):1-7.
+Klaise J., Van Looveren A., Vacanti G., and Coca A. Alibi Explain: Algorithms for Explaining Machine
+Learning Models. Journal of Machine Learning Research. 2021;22(181):1-7.
 
