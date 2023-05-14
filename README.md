@@ -1,5 +1,3 @@
-[![DOI:10.1128/spectrum.02065-22](https://doi.org/10.1128/spectrum.02065-22)]
-
 ### TreeOrdination
 Implementation of a wrapper which creates unsupervised projections using LANDMark and UMAP.
     
