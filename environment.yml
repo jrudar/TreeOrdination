@@ -1,4 +1,4 @@
-name: TreeOrdination-Env
+name: TreeOrdination
 
 dependencies:
     - python >=3.8
