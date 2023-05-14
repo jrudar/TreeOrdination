@@ -19,7 +19,7 @@ jobs:
       with:
         miniforge-variant: Mambaforge
         miniforge-version: latest
-        activate-environment: Triglav
+        activate-environment: TreeOrdination
         channel-priority: strict
         environment-file: pyproject.toml
         use-mamba: true
