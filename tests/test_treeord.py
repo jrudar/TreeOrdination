@@ -15,8 +15,6 @@ from pathlib import Path
 
 dirpath = Path(__file__).parent
 
-expected_output = dirpath / 'data/expected_output.csv'
-
 # Tests the transformer modules
 def test_transformers():
 
@@ -82,8 +80,8 @@ def test_treeord_basic():
     #Set up TreeOrdinaton
     model = TreeOrdination(feature_names = [i for i in range(0, X.shape[1])],
                            transformer = StandardScaler(),
-                           n_iter_unsup = 2,
-                           n_jobs = 10)
+                           n_iter_unsup = 5,
+                           n_jobs = 5)
 
     #Identify predictive features
     model.fit(X_train, y_train)
