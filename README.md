@@ -1,4 +1,6 @@
 ### TreeOrdination
+[![CI](https://github.com/jrudar/Triglav/actions/workflows/ci.yml/badge.svg)](https://github.com/jrudar/Triglav/actions/workflows/ci.yml)
+
 Implementation of a wrapper which creates unsupervised projections using LANDMark and UMAP.
     
 ### Install Dependencies
