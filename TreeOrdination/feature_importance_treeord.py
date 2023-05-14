@@ -1,7 +1,3 @@
-from abc import ABCMeta, abstractmethod
-
-from dataclasses import dataclass
-
 from alibi.explainers import TreeShap
 
 import numpy as np
@@ -22,6 +18,9 @@ class ExplainImportance:
         self.feature_names = feature_names
 
     def get_importance(self):
+
+        # TO-DO: Add KernelExplainer for models not based on trees.
+        #        Add explainer for neural networks
 
         self.explainer = TreeShap(self.model, task="regression", model_output="raw")
 

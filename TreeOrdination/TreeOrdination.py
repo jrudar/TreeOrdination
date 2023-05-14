@@ -18,6 +18,7 @@ import seaborn as sns
 from .transformers_treeord import NoTransform, CLRClosureTransformer, NoResample
 from .feature_importance_treeord import ExplainImportance
 
+
 # Randomization function
 def addcl2(X, transformer, exclude_col):
 
@@ -142,6 +143,7 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
         resampler=NoResample(),
         metric="hamming",
         supervised_clf=ExtraTreesClassifier(1024),
+        proxy_model = ExtraTreesRegressor(1024),
         n_iter_unsup=5,
         unsup_n_estim=160,
         max_samples_tree=100,
@@ -159,6 +161,8 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
         self.metric = metric
 
         self.supervised_clf = supervised_clf
+        self.proxy_model = proxy_model
+
         self.n_iter_unsup = n_iter_unsup
         self.unsup_n_estim = unsup_n_estim
         self.max_samples_tree = max_samples_tree
@@ -276,7 +280,7 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
 
             X_transformed = self.proj_transformer.fit_transform(X)
 
-        self.l_model = clone(ExtraTreesRegressor(1024)).fit(
+        self.l_model = clone(self.proxy_model).fit(
             X_transformed, self.R_PCA_emb
         )
 
@@ -319,7 +323,7 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
     def plot_projection(self, X, y, ax_1=0, ax_2=1, use_approx=True):
 
         # Plot data
-        if use_approx == False:
+        if use_approx is False:
             projection = self.emb_transform(X)
 
         else:
