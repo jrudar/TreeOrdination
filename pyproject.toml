@@ -28,7 +28,6 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3 :: Only",
-    "Topic :: Ecology :: Multivariate Statistics :: Dimensionality Reduction",
 ]
 dependencies = [
     "numpy == 1.23.5",
