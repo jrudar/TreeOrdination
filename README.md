@@ -9,13 +9,15 @@ The LANDMark package is needed for TreeOrdination to work. It is available at: h
 ### Install
 From PyPI:
 
-Comming Soon
+```
+pip install TreeOrdination
+```
 
 From source:
 
 ```bash
-git clone https://github.com/jrudar/Triglav.git
-cd Triglav
+git clone https://github.com/jrudar/TreeOrdination.git
+cd TreeOrdination
 pip install .
 # or create a virtual environment
 python -m venv venv
