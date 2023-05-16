@@ -35,7 +35,7 @@ dependencies = [
     "scikit-bio >= 0.5.8",
     "umap-learn >= 0.5.3",
     "seaborn",
-    "shap >= 0.40,
+    "shap >= 0.40.0,
     "LANDMark@git+https://github.com/jrudar/LANDMark.git", # install from GitHub main branch
 ]
 
