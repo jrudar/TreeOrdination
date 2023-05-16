@@ -1,6 +1,6 @@
 [project]
 name = "TreeOrdination"
-version = "1.2.0"
+version = "1.1.0"
 authors = [
     {name = "Josip Rudar", email = "rudarj@uoguelph.ca"},
     {name = "G. Brian Golding"},
