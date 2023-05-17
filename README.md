@@ -12,7 +12,6 @@ From PyPI:
 ```
 pip install TreeOrdination
 ```
-This will become available after LANDMark has been updated for distribution on PyPI.
 
 From source:
 
