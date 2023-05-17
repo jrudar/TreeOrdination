@@ -9,5 +9,5 @@ dependencies:
         - scikit-learn >= 1.1.2
         - scikit-bio >= 0.5.8
         - umap-learn >= 0.5.3
-        - alibi[ray] >= 0.9.0
+        - shap >= 0.40.0
         - seaborn
