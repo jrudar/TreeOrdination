@@ -6,7 +6,7 @@ of the `TreeOrdination` class and its methods.
 ## Class
 
     class TreeOrdination.TreeOrdination(feature_names, resampler =  NoResample(),  metric  = "hamming", supervised_clf =  ExtraTreesClassifier(1024),
-                                        n_iter_unsup = 5, unsup_n_estim = 160, max_samples_tree = 100, transformer =  NoTransform(),
+                                        proxy_model = ExtraTreesRegressor(1024), n_iter_unsup = 5, unsup_n_estim = 160, max_samples_tree = 100, transformer =  NoTransform(),
                                         exclude_col = [False, 0],  n_neighbors = 8, n_components  = 2, min_dist = 0.001, n_jobs = 4)
 
 ### Parameters
@@ -26,6 +26,10 @@ of the `TreeOrdination` class and its methods.
         The classification model used to predict the class of each sample
         using the unsupervised projections.
         
+    proxy_model: default = ExtraTreesClassifier(1024)
+        The regression model used to predict the location of each sample
+        in the projected space.
+
     n_iter_unsup: int, default = 5
         The number of LANDMark embeddings which will be used to construct
         the final embedding.

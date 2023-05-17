@@ -1,8 +1,4 @@
-from abc import ABCMeta, abstractmethod
-
-from dataclasses import dataclass
-
-from alibi.explainers import TreeShap
+from shap import Explainer
 
 import numpy as np
 
@@ -23,9 +19,10 @@ class ExplainImportance:
 
     def get_importance(self):
 
-        self.explainer = TreeShap(self.model, task="regression", model_output="raw")
+        # TO-DO: Add KernelExplainer for models not based on trees.
+        #        Add explainer for neural networks
 
-        self.explainer.fit()
+        self.explainer = Explainer(self.model)
 
     def plot_importance(
         self, X, n_features, class_name, axis=0, summary="median", **kwargs
@@ -36,8 +33,7 @@ class ExplainImportance:
         Adapted from: https://docs.seldon.io/projects/alibi/en/stable/examples/path_dependent_tree_shap_adult_xgb.html
         """
         # Calculate importances
-        shap_data = self.explainer.explain(X, interactions=False)
-        feat_imp = shap_data.shap_values[axis]
+        feat_imp = self.explainer.shap_values(X)[axis]
 
         # Determine if Global or Local feature importances are to be printed
         # Determine how SHAP values are to be sumarized across multiple samples from each class
@@ -66,7 +62,7 @@ class ExplainImportance:
             overview = "Local"
             xlabel = "SHAP Values"
             ylabel = "Feature Name (Magnitude)"
-            prediction = shap_data.data["raw"]["raw_prediction"][0][axis]
+            prediction = self.model.predict([X])[0][axis]
 
         # Sort Features
         feat_imp_pd = pd.Series(data=feat_imp, index=self.feature_names)
