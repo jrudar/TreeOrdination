@@ -96,23 +96,23 @@ def test_treeord_basic():
     # Identify predictive features
     model.fit(X_train, y_train)
 
-    #X_emb_train = model.emb_transform(X_train)
-    #X_approx_train = model.approx_emb(X_train)
+    X_emb_train = model.emb_transform(X_train)
+    X_approx_train = model.approx_emb(X_train)
 
-    #X_emb_test = model.emb_transform(X_test)
-    #X_approx_test = model.approx_emb(X_test)
+    X_emb_test = model.emb_transform(X_test)
+    X_approx_test = model.approx_emb(X_test)
 
-    #error_train = median_absolute_error(X_emb_train, X_approx_train)
-    #assert error_train <= 0.75
+    error_train = median_absolute_error(X_emb_train, X_approx_train)
+    assert error_train <= 0.75
 
-    #error_test = median_absolute_error(X_emb_test, X_approx_test)
-    #assert error_test <= 0.75
+    error_test = median_absolute_error(X_emb_test, X_approx_test)
+    assert error_test <= 0.75
 
-    #p = model.predict(X_test)
-    #s = balanced_accuracy_score(y_test, p)
-    #assert s >= 0.75
+    p = model.predict(X_test)
+    s = balanced_accuracy_score(y_test, p)
+    assert s >= 0.75
 
-    #model.plot_projection(X, y)
+    model.plot_projection(X, y)
 
     model.get_importance()
     model.plot_importance_global(X_test, y_test, 0, 10, 0)
