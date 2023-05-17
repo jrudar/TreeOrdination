@@ -4,7 +4,7 @@ requires = ["hatchling"]
 
 [project]
 name = "TreeOrdination"
-version = "1.2.0"
+version = "1.2.1"
 authors = [
     {name = "Josip Rudar", email = "rudarj@uoguelph.ca"},
     {name = "G. Brian Golding"},
@@ -40,7 +40,7 @@ dependencies = [
     "umap-learn >= 0.5.3",
     "seaborn",
     "shap >= 0.40.0",
-    "LANDMark@git+https://github.com/jrudar/LANDMark.git", # install from GitHub main branch
+    "LANDMarkClassifier >= 2.0.0"
 ]
 
 [tool.hatch.metadata]
