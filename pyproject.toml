@@ -43,6 +43,9 @@ dependencies = [
     "LANDMark@git+https://github.com/jrudar/LANDMark.git", # install from GitHub main branch
 ]
 
+[tool.hatch.metadata]
+allow-direct-references = true
+
 [project.urls]
 "Homepage" = "https://github.com/jrudar/TreeOrdination"
 "Repository" = "https://github.com/jrudar/TreeOrdination.git"
