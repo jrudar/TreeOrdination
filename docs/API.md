@@ -6,7 +6,7 @@ of the `TreeOrdination` class and its methods.
 ## Class
 
     class TreeOrdination.TreeOrdination(feature_names, resampler =  NoResample(),  metric  = "hamming", supervised_clf =  ExtraTreesClassifier(1024),
-                                        proxy_model = ExtraTreesRegressor(1024), n_iter_unsup = 5, unsup_n_estim = 160, max_samples_tree = 100, transformer =  NoTransform(),
+                                        proxy_model = ExtraTreesRegressor(1024), n_iter_unsup = 5, unsup_n_estim = 160, transformer =  NoTransform(),
                                         exclude_col = [False, 0],  n_neighbors = 8, n_components  = 2, min_dist = 0.001, n_jobs = 4)
 
 ### Parameters
@@ -16,7 +16,8 @@ of the `TreeOrdination` class and its methods.
 
     resampler: default = NoResample
         The re-sampling  method to be used. Should follow the format
-        used by 'imbalaced-learn'
+        used by 'imbalaced-learn'. Use this to control how many samples
+        are passed to LANDMark.
     
     metric: str, default = "hamming"
         The metric used by UMAP to calculate the dissimilarity between 
@@ -36,9 +37,6 @@ of the `TreeOrdination` class and its methods.
         
     unsup_n_estim: int, default = 160
         The number of decision trees in each LANDMark classifier.
-
-    max_samples_tree: int, default = 100
-        Specifies how many samples will be used to train each LANDMark tree.
         
     transformer: default = NoTransform()
         The pre-processing method used to transform data. Should follow
