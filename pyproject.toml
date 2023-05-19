@@ -40,7 +40,7 @@ dependencies = [
     "umap-learn >= 0.5.3",
     "seaborn",
     "shap >= 0.40.0",
-    "LANDMarkClassifier >= 2.0.0"
+    "LANDMarkClassifier >= 2.0.2"
 ]
 
 [tool.hatch.metadata]
