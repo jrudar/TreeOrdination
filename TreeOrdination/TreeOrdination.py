@@ -146,7 +146,6 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
         proxy_model = ExtraTreesRegressor(1024),
         n_iter_unsup=5,
         unsup_n_estim=160,
-        max_samples_tree=100,
         transformer=NoTransform(),
         exclude_col=[False, 0],
         n_neighbors=8,
@@ -165,7 +164,6 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
 
         self.n_iter_unsup = n_iter_unsup
         self.unsup_n_estim = unsup_n_estim
-        self.max_samples_tree = max_samples_tree
 
         self.transformer = transformer
 
@@ -205,7 +203,6 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
             model = LANDMarkClassifier(
                 self.unsup_n_estim,
                 use_nnet=False,
-                resampler = None,
                 n_jobs=self.n_jobs,
             ).fit(X_rnd, y_rnd)
             self.Rs.append(model)
