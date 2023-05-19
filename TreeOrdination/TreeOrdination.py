@@ -205,7 +205,7 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
             model = LANDMarkClassifier(
                 self.unsup_n_estim,
                 use_nnet=False,
-                max_samples_tree=self.max_samples_tree,
+                resampler = None,
                 n_jobs=self.n_jobs,
             ).fit(X_rnd, y_rnd)
             self.Rs.append(model)
