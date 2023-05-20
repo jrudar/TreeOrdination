@@ -2,9 +2,7 @@ import numpy as np
  
 from sklearn.ensemble import ExtraTreesClassifier, ExtraTreesRegressor
 from sklearn.preprocessing import LabelEncoder
-from sklearn.feature_selection import VarianceThreshold
 from sklearn.base import ClassifierMixin, BaseEstimator, clone
-from sklearn.utils import resample
 from sklearn.decomposition import PCA
 
 from umap import UMAP
@@ -15,94 +13,8 @@ from matplotlib import pyplot as plt
 
 import seaborn as sns
 
-from .transformers_treeord import NoTransform, CLRClosureTransformer, NoResample
+from .transformers_treeord import NoTransform, CLRClosureTransformer, NoResample, ResampleRandomizeTransform
 from .feature_importance_treeord import ExplainImportance
-
-
-# Randomization function
-def addcl2(X, transformer, exclude_col):
-
-    zero_var_trf = VarianceThreshold()
-    zero_var_notrf = VarianceThreshold()
-
-    # Resample rows
-    X_resamp = resample(X, replace=True, n_samples=X.shape[0])
-
-    # If there are columns to exclude from scaling...
-    if exclude_col[0]:
-
-        # Split data into columns excluded from transformation
-        excl_range = np.asarray(exclude_col[1])
-
-        X_resamp_scale = np.delete(X_resamp, excl_range, axis=1)
-        X_resamp_noscale = X_resamp[:, excl_range]
-
-        # Remove zero-variance features (for transformed data)
-        zero_var_trf.fit(X_resamp_scale)
-        zeros_scale = np.where(zero_var_trf.variances_ > 0, True, False)
-
-        X_resamp_scale = X_resamp_scale[:, zeros_scale]
-
-        # Resample columns and transform - For data which will be transformed
-        X_perm_scale = np.copy(X_resamp_scale, "C")
-        for col in range(X_perm_scale.shape[1]):
-            X_perm_scale[:, col] = np.random.choice(
-                X_perm_scale[:, col], replace=False, size=X_perm_scale.shape[0]
-            )
-
-        X_resamp_scale = transformer.fit_transform(
-            np.vstack((X_resamp_scale, X_perm_scale))
-        )
-
-        # Remove zero-variance features (for data which will not be transformed)
-        zero_var_notrf.fit(X_resamp_noscale)
-        zeros_noscale = np.where(zero_var_notrf.variances_ > 0, True, False)
-
-        X_resamp_noscale = X_resamp_noscale[:, zeros_noscale]
-
-        # Resample columns - For data which will not be transformed
-        X_perm_noscale = np.copy(X_resamp_noscale, "C")
-        for col in range(X_perm_noscale.shape[1]):
-            X_perm_noscale[:, col] = np.random.choice(
-                X_perm_noscale[:, col], replace=False, size=X_perm_noscale.shape[0]
-            )
-
-        X_resamp_noscale = np.vstack((X_resamp_noscale, X_perm_noscale))
-
-        # Combine transformed and untransformed data
-        X_new = np.hstack((X_resamp_scale, X_resamp_noscale))
-
-        # Create Labels
-        y_new = [0 for _ in range(X_resamp.shape[0])]
-        y_new.extend([1 for _ in range(X_resamp.shape[0])])
-        y_new = np.asarray(y_new)
-
-        return X_new, y_new, zeros_scale, zeros_noscale, transformer
-
-    else:
-        # Resampling can introduce features with zeros. Remove
-        zero_var_trf.fit(X_resamp)
-        zeros_scale = np.where(zero_var_trf.variances_ > 0, True, False)
-
-        X_resamp_scale = X_resamp[:, zeros_scale]
-
-        # Resample columns
-        X_perm_scale = np.copy(X_resamp_scale, "C")
-        for col in range(X_perm_scale.shape[1]):
-            X_perm_scale[:, col] = np.random.choice(
-                X_perm_scale[:, col], replace=False, size=X_perm_scale.shape[0]
-            )
-
-        X_resamp_scale = np.vstack((X_resamp_scale, X_perm_scale))
-
-        X_resamp_scale = transformer.fit_transform(X_resamp_scale)
-
-        # Create Labels
-        y_new = [0 for _ in range(X_resamp_scale.shape[0] // 2)]
-        y_new.extend([1 for _ in range(X_resamp_scale.shape[0] // 2)])
-        y_new = np.asarray(y_new)
-
-        return X_resamp_scale, y_new, zeros_scale, np.asarray([]), transformer
 
 
 def basic_transform(X, transformer, exclude_col):
@@ -180,49 +92,25 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
         # Get an Initial LANDMark Representations
         self.Rs = []
         self.R_final = []
-        self.features_scaled = []
-        self.features_unscaled = []
-        self.transformers = []
 
         for i in range(self.n_iter_unsup):
 
-            # Resample to handle class imbalance
-            X_prep, _ = clone(self.resampler).fit_resample(X, self.y)
-
-            # Get random features
-            X_rnd, y_rnd, scaled_features, unscaled_features, fit_transformer = addcl2(
-                X_prep, clone(self.transformer), self.exclude_col
-            )
-
-            # Save non-zero features and transformers for later use
-            self.features_scaled.append(scaled_features)
-            self.features_unscaled.append(unscaled_features)
-            self.transformers.append(fit_transformer)
+            # Prepare resampling, randomization, and transformation object
+            resampler = ResampleRandomizeTransform(clone(self.resampler),
+                                                   clone(self.transformer),
+                                                   self.exclude_col)
 
             # Train model
             model = LANDMarkClassifier(
                 self.unsup_n_estim,
                 use_nnet=False,
                 n_jobs=self.n_jobs,
-            ).fit(X_rnd, y_rnd)
+                resampler = resampler
+            ).fit(X, y) # The resampler is created in such a way that it overrides the default behavior of the LANDMarkClassifier. y is only used to ensure the distribuion of samples in the re-sampled data is matches that specified by the user
             self.Rs.append(model)
 
             # Get proximity
-            if self.exclude_col[0]:
-                excl_range = np.asarray(self.exclude_col[1])
-
-                X_scale = np.delete(X, excl_range, axis=1)[:, scaled_features]
-                X_scale = fit_transformer.transform(X_scale)
-
-                X_noscale = X[:, excl_range][:, unscaled_features]
-
-                X_transformed = np.hstack((X_scale, X_noscale))
-
-            else:
-                X_transformed = fit_transformer.transform(X[:, scaled_features])
-
-            proximity = model.proximity(X_transformed)
-            self.R_final.append(proximity)
+            self.R_final.append(model.proximity(X))
 
         # Get Overall Proximity
         self.R_final = np.hstack(self.R_final)
@@ -364,37 +252,11 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
 
         for i in range(self.n_iter_unsup):
 
-            # Grab locations of non-zero features
-            scaled_features = self.features_scaled[i]
-            unscaled_features = self.features_unscaled[i]
-            fit_transformer = self.transformers[i]
-
-            # Train model
+            # Get trained model
             model = self.Rs[i]
 
             # Get proximity
-            if self.exclude_col[0]:
-                excl_range = np.asarray(self.exclude_col[1])
-
-                X_transformed = np.delete(X, excl_range, axis=1)[:, scaled_features]
-
-                if X_transformed.ndim == 1:
-                    X_transformed = np.asarray([X_transformed])
-
-                X_transformed = fit_transformer.transform(X_transformed)
-
-                if X_transformed.ndim == 1:
-                    X_transformed = np.asarray([X_transformed])
-
-                X_no_transform = X[:, excl_range][:, unscaled_features]
-
-                X_transformed = np.hstack((X_transformed, X_no_transform))
-
-            else:
-                X_transformed = X[:, scaled_features]
-                X_transformed = fit_transformer.transform(X_transformed)
-
-            proximity = model.proximity(X_transformed)
+            proximity = model.proximity(X)
 
             tree_emb.append(proximity)
 
