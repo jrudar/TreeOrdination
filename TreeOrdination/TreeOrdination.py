@@ -106,7 +106,7 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
                 use_nnet=False,
                 n_jobs=self.n_jobs,
                 resampler = resampler
-            ).fit(X, y) # The resampler is created in such a way that it overrides the default behavior of the LANDMarkClassifier. y is only used to ensure the distribuion of samples in the re-sampled data is matches that specified by the user
+            ).fit(X, self.y) # The resampler is created in such a way that it overrides the default behavior of the LANDMarkClassifier. y is only used to ensure the distribuion of samples in the re-sampled data is matches that specified by the user
             self.Rs.append(model)
 
             # Get proximity
