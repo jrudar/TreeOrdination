@@ -62,7 +62,7 @@ class ResampleRandomizeTransform(BaseEstimator, TransformerMixin):
     def fit_resample(self, X, y):
         
         # Resample real data so that the resampled data comes from the same distribution specified by resampler
-        X_re, y_re = self.resampler.fit_resample(self.X_real, self.y_real)
+        X_re, y_re = self.resampler.fit_resample(X, y)
 
         y_re = np.asarray([0 for _ in range(X_re.shape[0])])
 
