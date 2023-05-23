@@ -1,6 +1,7 @@
 from TreeOrdination import (
     TreeOrdination,
     CLRClosureTransformer,
+    ResampleRandomizeTransform
 )
 
 from sklearn.datasets import make_classification
@@ -47,6 +48,13 @@ def test_transformers():
     X_closure = pd.DataFrame(closure(X_non_neg))
     pd.testing.assert_frame_equal(X_closure, R, check_dtype=False)
 
+    # Ensure resampled data is Standardized
+    R_trf = ResampleRandomizeTransform(None, StandardScaler(), [False, -1])
+    R = R_trf.fit_resample(X)
+    R = pd.DataFrame(R[0:R.shape[0]//2])
+    X_std = pd.DataFrame(R_trf.transform(X))
+    pd.testing.assert_frame_equal(R, X_std, check_dtype = False)
+
 # Tests the overall TreeOrdination pipeline
 def test_treeord_basic():
 
@@ -72,7 +80,6 @@ def test_treeord_basic():
         feature_names=[i for i in range(0, X.shape[1])],
         transformer=StandardScaler(),
         n_iter_unsup=2,
-        n_jobs=10,
     )
 
     # Identify predictive features
