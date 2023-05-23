@@ -38,13 +38,13 @@ pip install .
         tree_ord = TreeOrdination(feature_names = f_names).fit(X, y)
 
         #This is the LANDMark embedding of the dataset. This dataset is used to train the supervised model ('supervised_clf' parameter)
-        landmark_embedding = tree_ord.R_final
+        landmark_embedding = tree_ord.LM_emb
         
         #This is the UMAP projection of the LANDMark embedding
-        umap_projection = tree_ord.tree_emb
+        umap_projection = tree_ord.UMAP_emb
         
         #This is the PCA projetion of the UMAP embedding
-        pca_projection = tree_ord.R_PCA_emb      
+        pca_projection = tree_ord.PCA_emb     
 
 ### Notebooks and Other Examples
 Comming Soon.

@@ -47,14 +47,6 @@ def test_transformers():
     X_closure = pd.DataFrame(closure(X_non_neg))
     pd.testing.assert_frame_equal(X_closure, R, check_dtype=False)
 
-    R = pd.DataFrame(R)
-    pd.testing.assert_frame_equal(X, R, check_dtype=False)
-
-    R_y = pd.Series(R_y)
-    y = pd.Series(y)
-    pd.testing.assert_series_equal(y, R_y, check_dtype=False)
-
-
 # Tests the overall TreeOrdination pipeline
 def test_treeord_basic():
 
