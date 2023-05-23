@@ -1,8 +1,6 @@
 from TreeOrdination import (
     TreeOrdination,
     CLRClosureTransformer,
-    NoTransform,
-    NoResample,
 )
 
 from sklearn.datasets import make_classification
