@@ -50,7 +50,7 @@ def test_transformers():
 
     # Ensure resampled data is Standardized
     R_trf = ResampleRandomizeTransform(None, StandardScaler(), [False, -1])
-    R = R_trf.fit_resample(X)
+    R = R_trf.fit_resample(X, y)
     R = pd.DataFrame(R[0:R.shape[0]//2])
     X_std = pd.DataFrame(R_trf.transform(X))
     pd.testing.assert_frame_equal(R, X_std, check_dtype = False)
