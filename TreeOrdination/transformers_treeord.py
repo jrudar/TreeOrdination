@@ -16,7 +16,7 @@ class CLRClosureTransformer(BaseEstimator, TransformerMixin):
     def fit_transform(self, X, y=None, **kwargs):
 
         if self.do_clr:
-            return clr(multiplicative_replacement(closure(X[rows_to_keep]), delta=self.delta))
+            return clr(multiplicative_replacement(closure(X), delta=self.delta))
 
         else:
             return closure(X)
@@ -24,7 +24,7 @@ class CLRClosureTransformer(BaseEstimator, TransformerMixin):
     def transform(self, X, y=None, **kwargs):
 
         if self.do_clr:
-            return clr(multiplicative_replacement(closure(X[rows_to_keep]), delta=self.delta))
+            return clr(multiplicative_replacement(closure(X), delta=self.delta))
 
         else:
             return closure(X)
