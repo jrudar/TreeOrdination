@@ -13,14 +13,14 @@ from matplotlib import pyplot as plt
 
 import seaborn as sns
 
-from .transformers_treeord import NoTransform, CLRClosureTransformer, NoResample, ResampleRandomizeTransform
+from .transformers_treeord import CLRClosureTransformer, ResampleRandomizeTransform
 from .feature_importance_treeord import ExplainImportance
 
 
 def basic_transform(X, transformer, exclude_col):
 
     if X.ndim == 2:
-        X_in = X
+        X_in = np.copy(X, "C")
 
     else:
         X_in = np.asarray([X])
@@ -31,14 +31,21 @@ def basic_transform(X, transformer, exclude_col):
 
         X_transformed = np.delete(X_in, excl_range, axis=1)
 
-        X_transformed = transformer.transform(X_transformed)
+        if isinstance(self.transformer, type(None)) == False:
+            X_transformed = transformer.transform(X_transformed)
 
         X_no_transform = X_in[:, excl_range]
+
+        if X_transformed.ndim == 1:
+            X_transformed = [X_transformed]
 
         X_transformed = np.hstack((X_transformed, X_no_transform))
 
     else:
-        X_transformed = transformer.transform(X_in)
+        X_transformed = X_in
+
+        if isinstance(self.transformer, type(None)) == False:
+            X_transformed = transformer.transform(X_in)
 
     if X.ndim == 2:
         return X_transformed
@@ -52,18 +59,17 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
     def __init__(
         self,
         feature_names,
-        resampler=NoResample(),
+        resampler=None,
         metric="hamming",
         supervised_clf=ExtraTreesClassifier(1024),
         proxy_model = ExtraTreesRegressor(1024),
+        landmark_model = LANDMarkClassifier(160, use_nnet=False, n_jobs = 8),
         n_iter_unsup=5,
-        unsup_n_estim=160,
-        transformer=NoTransform(),
+        transformer=None,
         exclude_col=[False, 0],
         n_neighbors=8,
         n_components=2,
         min_dist=0.001,
-        n_jobs=4,
     ):
         self.feature_names = feature_names
 
@@ -73,9 +79,9 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
 
         self.supervised_clf = supervised_clf
         self.proxy_model = proxy_model
+        self.landmark_model = landmark_model
 
         self.n_iter_unsup = n_iter_unsup
-        self.unsup_n_estim = unsup_n_estim
 
         self.transformer = transformer
 
@@ -85,48 +91,54 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
         self.n_components = n_components
         self.min_dist = min_dist
 
-        self.n_jobs = n_jobs
-
     def get_initial_embedding(self, X):
 
         # Get an Initial LANDMark Representations
         self.Rs = []
-        self.R_final = []
+        self.LM_emb = []
+        self.transformers = []
 
         for i in range(self.n_iter_unsup):
 
-            # Prepare resampling, randomization, and transformation object
-            resampler = ResampleRandomizeTransform(clone(self.resampler),
-                                                   clone(self.transformer),
+            print("Iteration %d..." %i)
+
+            #No resample and transform
+            resampler = ResampleRandomizeTransform(self.resampler,
+                                                   self.transformer,
                                                    self.exclude_col)
 
+            X_rand, y_rand = resampler.fit_resample(X, self.y)
+
             # Train model
-            model = LANDMarkClassifier(
-                self.unsup_n_estim,
-                use_nnet=False,
-                n_jobs=self.n_jobs,
-                resampler = resampler
-            ).fit(X, self.y) # The resampler is created in such a way that it overrides the default behavior of the LANDMarkClassifier. y is only used to ensure the distribuion of samples in the re-sampled data is matches that specified by the user
+            model = clone(self.landmark_model)
+
+            model.fit(X_rand, y_rand)
             self.Rs.append(model)
 
             # Get proximity
-            self.R_final.append(model.proximity(X))
+            X_trf = resampler.transform(X)
+            self.LM_emb.append(model.proximity(X_trf))
+
+            # Save the resampler
+            self.transformers.append(resampler)
 
         # Get Overall Proximity
-        self.R_final = np.hstack(self.R_final)
+        self.LM_emb = np.hstack(self.LM_emb)
 
         # Get Embeddings
-        self.tree_emb = UMAP(
+        self.UMAP_trf = UMAP(
             n_neighbors=self.n_neighbors,
             n_components=15,
             min_dist=self.min_dist,
             metric=self.metric,
             densmap=False,
-        ).fit(self.R_final)
+        ).fit(self.LM_emb)
 
-        self.R_PCA = PCA(self.n_components).fit(self.tree_emb.transform(self.R_final))
+        self.UMAP_emb = self.UMAP_trf.transform(self.LM_emb)
 
-        self.R_PCA_emb = self.R_PCA.transform(self.tree_emb.transform(self.R_final))
+        self.PCA_trf = PCA(self.n_components, whiten = True).fit(self.UMAP_emb)
+
+        self.PCA_emb = self.PCA_trf.transform(self.UMAP_emb)
 
     def fit(self, X, y=None):
 
@@ -144,7 +156,7 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
         self.get_initial_embedding(X)
 
         # Train a Classification model
-        self.p_model = clone(self.supervised_clf).fit(self.R_final, y_enc.astype(int))
+        self.p_model = clone(self.supervised_clf).fit(self.LM_emb, y_enc.astype(int))
 
         # Train a projection model (Approximate Transformer)
         if self.exclude_col[0]:
@@ -152,21 +164,25 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
 
             X_transformed = np.delete(X, excl_range, axis=1)
 
-            self.proj_transformer = clone(self.transformer)
+            if isinstance(self.transformer, type(None)) == False:
+                self.proj_transformer = clone(self.transformer)
 
-            X_transformed = self.proj_transformer.fit_transform(X_transformed)
+                X_transformed = self.proj_transformer.fit_transform(X_transformed)
 
             X_no_transform = X[:, excl_range]
 
             X_transformed = np.hstack((X_transformed, X_no_transform))
 
         else:
-            self.proj_transformer = clone(self.transformer)
+            X_transformed = np.copy(X, "C")
 
-            X_transformed = self.proj_transformer.fit_transform(X)
+            if isinstance(self.transformer, type(None)) == False:
+                self.proj_transformer = clone(self.transformer)
+
+                X_transformed = self.proj_transformer.fit_transform(X)
 
         self.l_model = clone(self.proxy_model).fit(
-            X_transformed, self.R_PCA_emb
+            X_transformed, self.PCA_emb
         )
 
         return self
@@ -205,14 +221,10 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
             **kwargs
         )
 
-    def plot_projection(self, X, y, ax_1=0, ax_2=1, use_approx=True):
+    def plot_projection(self, X, y, ax_1=0, ax_2=1, use_approx=True, trf_type = "PCA"):
 
         # Plot data
-        if use_approx is False:
-            projection = self.emb_transform(X)
-
-        else:
-            projection = self.approx_emb(X)
+        projection = self.emb_transform(X, trf_type)
 
         fig, ax = plt.subplots(figsize=(10, 5))
 
@@ -230,7 +242,7 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
 
     def predict_proba(self, X):
 
-        tree_emb = self.transform(X)
+        tree_emb = self.emb_transform(X, "LM")
 
         P = self.p_model.predict_proba(tree_emb)
 
@@ -238,7 +250,7 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
 
     def predict(self, X):
 
-        tree_emb = self.transform(X)
+        tree_emb = self.emb_transform(X, "LM")
 
         P = self.p_model.predict(tree_emb)
 
@@ -246,37 +258,36 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
 
         return P
 
-    def transform(self, X):
+    def emb_transform(self, X, trf_type = "PCA"):
 
-        tree_emb = []
+        if trf_type == "approx":
+            X_transformed = basic_transform(X, self.proj_transformer, self.exclude_col)
 
-        for i in range(self.n_iter_unsup):
+            return self.l_model.predict(X_transformed)
 
-            # Get trained model
-            model = self.Rs[i]
+        else:
+            tree_emb = []
 
-            # Get proximity
-            proximity = model.proximity(X)
+            for i in range(self.n_iter_unsup):
 
-            tree_emb.append(proximity)
+                # Get trained model
+                model = self.Rs[i]
+                transformer = self.transformers[i]
 
-        tree_emb = np.hstack(tree_emb)
+                # Get proximity
+                proximity = model.proximity(transformer.transform(X))
 
-        return tree_emb
+                tree_emb.append(proximity)
 
-    def emb_transform(self, X):
+            tree_emb = np.hstack(tree_emb)
 
-        tree_emb = self.transform(X)
+            if trf_type == "LM":
+                return tree_emb
 
-        tree_emb = self.tree_emb.transform(tree_emb)
+            umap_emb = self.UMAP_trf.transform(tree_emb)
+            if trf_type == "UMAP":
+                return umap_emb
 
-        tree_emb = self.R_PCA.transform(tree_emb)
-
-        return tree_emb
-
-    def approx_emb(self, X):
-
-        # Transform data and return prediction
-        X_transformed = basic_transform(X, self.proj_transformer, self.exclude_col)
-
-        return self.l_model.predict(X_transformed)
+            pca_emb = self.PCA_trf.transform(umap_emb)
+            if trf_type == "PCA":
+                return pca_emb

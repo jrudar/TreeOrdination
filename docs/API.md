@@ -31,13 +31,12 @@ of the `TreeOrdination` class and its methods.
         The regression model used to predict the location of each sample
         in the projected space.
 
+    landmark_model: default = LANDMarkClassifier(160, use_nnet = False, n_jobs = 8)
+
     n_iter_unsup: int, default = 5
         The number of LANDMark embeddings which will be used to construct
         the final embedding.
-        
-    unsup_n_estim: int, default = 160
-        The number of decision trees in each LANDMark classifier.
-        
+                
     transformer: default = NoTransform()
         The pre-processing method used to transform data. Should follow
         the 'scikit-learn' format.
@@ -58,9 +57,6 @@ of the `TreeOrdination` class and its methods.
      
     min_dist: float, default = 0.001
         The 'min_dist' parameter of UMAP.
-
-    n_jobs: int, default = 4
-        The number of processes used by LANDMark to train each classifier.
 
 ### Attributes
 
@@ -87,34 +83,25 @@ of the `TreeOrdination` class and its methods.
     Rs: list
         A list of trained LANDMark models
 
-    R_final: list
+    LM_emb: np.ndarray
         A list of LANDMark proximities
-
-    features_scaled: list
-        A list of masks containing information about zero-variance features
-        which are removed prior to preprocessing
-
-    features_unscaled: list
-        A list of masks containing information about zero-variance features
-        which are to be removed. These are features to which a pre-processing
-        transformation is not to be applied.
 
     transformers: list
         A list of pre-processing transformers to be applied prior to fitting
         a LANDMark model or using a LANDMark model to calculate proximities.
 
-    tree_emb: UMAP
+    UMAP_trf: UMAP
         A 'UMAP' transformer trained using R_final.
 
-    R_PCA: PCA
+    UMAP_emb: np.ndarray
+        The UMAP transformed data..
+
+    PCA_trf: PCA
         A 'scikit-learn' PCA transformer fit using the output of the UMAP
         transformer.
 
-    R_PCA_emb: np.ndarray
-        The PCA transformed data produced by applying R_PCA.
-
-    self.feature_importance_explainer:
-        An 'alibi' TreeExplainer object.
+    PCA_emb: np.ndarray
+        The PCA transformed data.
 
 ### Methods
 
@@ -231,39 +218,17 @@ of the `TreeOrdination` class and its methods.
         A np.ndarray of shape (m, p) where 'm' is the number of samples in X and
         'p' is the number of classes.
 
-    transform(X)
-        Transforms X into the high-dimensional LANDMark embedding.
-
-        Input:
-
-        X: NumPy array of shape (m, n) where 'm' is the number of samples and 'n'
-        the number of features (taxa, OTUs, ASVs, etc).
-
-        Returns:
-
-        X_transformed: NumPy array of shape (m, p) where 'm' is the number of samples and 'p'
-        the number of features (leaves of the LANDMark embedding)
-
-    emb_transform(X, y, **fit_params)
-        Transforms X into a lower dimensional embedding using LANDMark proximities.
+    emb_transform(X, y, trf_type)
+        Transforms X into a lower dimensional embedding.
 
         Parameters:
 
         X: NumPy array of shape (m, n) where 'm' is the number of samples and 'n'
         the number of features (taxa, OTUs, ASVs, etc).
 
-        Returns:
-
-        X_transformed: NumPy array of shape (m, p) where 'm' is the number of samples and 'p'
-        the number of components specified at the initialization of `TreeOrdination`.
-
-    approx_transform(X)
-        Transforms X into a lower dimensional embedding using the proxy model.
-
-        Parameters:
-
-        X: NumPy array of shape (m, n) where 'm' is the number of samples and 'n'
-        the number of features (taxa, OTUs, ASVs, etc).
+        trf_type: str, default = "PCA"
+        Transforms data using the specified transformer. Options are "approx", 
+        "LM", "UMAP", or "PCA".
 
         Returns:
 
@@ -272,8 +237,6 @@ of the `TreeOrdination` class and its methods.
 
 ## Class
 
-    class TreeOrdination.NoTransform()
-    class TreeOrdination.NoResample()
     class TreeOrdination.CLRClosureTransform(do_clr = False, delta = None)
 
 ### Parameters (For CLRClosureTransform() Only)
@@ -282,7 +245,7 @@ of the `TreeOrdination` class and its methods.
         Applies the CLR transformation if True. Otherwise only the closure
         operation is applied.
 
-### Methods (CLRClosureTransform/NoTransform)
+### Methods (CLRClosureTransform)
 
     fit_transform(X, y = None, **kwargs)
         Fits a CLRClosureTransform/NoTransform model and returns the transformed data.
@@ -311,19 +274,3 @@ of the `TreeOrdination` class and its methods.
 
         X_transformed: NumPy array of shape (m, n) where 'm' is the number of samples and 'n'
         the number of features.
-
-### Methods (NoResample)
-
-    fit_resample(X, y, **kwargs)
-
-        Parameters:
-
-        X: NumPy array of shape (m, n) where 'm' is the number of samples and 'n'
-        the number of features (taxa, OTUs, ASVs, etc).
-
-        y: NumPy array of shape (m,) where 'm' is the number of samples. Each entry
-        of 'y' should be a factor.
-
-        Returns:
-
-        X, y
