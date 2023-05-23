@@ -7,19 +7,6 @@ from sklearn.feature_selection import VarianceThreshold
 from sklearn.utils import resample
 
 
-class NoTransform(BaseEstimator, TransformerMixin):
-    def __init__(self):
-        pass
-
-    def fit_transform(self, X, y=None, **kwargs):
-
-        return X
-
-    def transform(self, X, y=None, **kwargs):
-
-        return X
-
-
 class CLRClosureTransformer(BaseEstimator, TransformerMixin):
     def __init__(self, do_clr=False, delta=None):
 
@@ -41,15 +28,6 @@ class CLRClosureTransformer(BaseEstimator, TransformerMixin):
 
         else:
             return closure(X)
-
-
-class NoResample(BaseEstimator, TransformerMixin):
-    def __init__(self):
-        pass
-
-    def fit_resample(self, X, y, **kwargs):
-
-        return X, y
 
 
 class ResampleRandomizeTransform(BaseEstimator, TransformerMixin):
