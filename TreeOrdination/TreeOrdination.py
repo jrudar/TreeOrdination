@@ -31,7 +31,7 @@ def basic_transform(X, transformer, exclude_col):
 
         X_transformed = np.delete(X_in, excl_range, axis=1)
 
-        if isinstance(self.transformer, type(None)) == False:
+        if isinstance(transformer, type(None)) == False:
             X_transformed = transformer.transform(X_transformed)
 
         X_no_transform = X_in[:, excl_range]
@@ -44,7 +44,7 @@ def basic_transform(X, transformer, exclude_col):
     else:
         X_transformed = X_in
 
-        if isinstance(self.transformer, type(None)) == False:
+        if isinstance(transformer, type(None)) == False:
             X_transformed = transformer.transform(X_in)
 
     if X.ndim == 2:
@@ -169,6 +169,9 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
 
                 X_transformed = self.proj_transformer.fit_transform(X_transformed)
 
+            else:
+                self.proj_transformer = None
+
             X_no_transform = X[:, excl_range]
 
             X_transformed = np.hstack((X_transformed, X_no_transform))
@@ -180,6 +183,9 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
                 self.proj_transformer = clone(self.transformer)
 
                 X_transformed = self.proj_transformer.fit_transform(X)
+
+            else:
+                self.proj_transformer = None
 
         self.l_model = clone(self.proxy_model).fit(
             X_transformed, self.PCA_emb
