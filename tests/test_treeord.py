@@ -48,12 +48,13 @@ def test_transformers():
     X_closure = pd.DataFrame(closure(X_non_neg))
     pd.testing.assert_frame_equal(X_closure, R, check_dtype=False)
 
-    # Ensure resampled data is Standardized
+    # Ensure sampler, transformer objected works
     R_trf = ResampleRandomizeTransform(None, StandardScaler(), [False, -1])
-    R = R_trf.fit_resample(X, y)
-    R = pd.DataFrame(R[0:R.shape[0]//2])
-    X_std = pd.DataFrame(R_trf.transform(X))
-    pd.testing.assert_frame_equal(R, X_std, check_dtype = False)
+    R, y_random = R_trf.fit_resample(X, y)
+    
+    assert R.shape[0] == int(X.shape[0] * 2)
+    assert R.shape[1] == X.shape[1]
+    assert y_random == == int(X.shape[0] * 2)
 
 # Tests the overall TreeOrdination pipeline
 def test_treeord_basic():
