@@ -236,8 +236,8 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
 
         sns.scatterplot(x=projection[:, ax_1], y=projection[:, ax_2], hue=y, ax=ax)
 
-        pc_ax_1 = self.R_PCA.explained_variance_ratio_[ax_1] * 100
-        pc_ax_2 = self.R_PCA.explained_variance_ratio_[ax_2] * 100
+        pc_ax_1 = self.PCA_trf.explained_variance_ratio_[ax_1] * 100
+        pc_ax_2 = self.PCA_trf.explained_variance_ratio_[ax_2] * 100
 
         ax.set_xlabel("PCA %s (%.3f Percent)" % (str(ax_1 + 1), pc_ax_1))
         ax.set_ylabel("PCA %s (%.3f Percent)" % (str(ax_2 + 1), pc_ax_2))
