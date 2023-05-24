@@ -54,7 +54,7 @@ def test_transformers():
     
     assert R.shape[0] == int(X.shape[0] * 2)
     assert R.shape[1] == X.shape[1]
-    assert y_random == == int(X.shape[0] * 2)
+    assert y_random == int(X.shape[0] * 2)
 
 # Tests the overall TreeOrdination pipeline
 def test_treeord_basic():
