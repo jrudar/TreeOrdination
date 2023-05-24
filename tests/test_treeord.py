@@ -86,11 +86,11 @@ def test_treeord_basic():
     # Identify predictive features
     model.fit(X_train, y_train)
 
-    X_emb_train = model.emb_transform(X_train)
-    X_approx_train = model.approx_emb(X_train)
+    X_emb_train = model.emb_transform(X_train, "PCA")
+    X_approx_train = model.approx_emb(X_train, "approx")
 
-    X_emb_test = model.emb_transform(X_test)
-    X_approx_test = model.approx_emb(X_test)
+    X_emb_test = model.emb_transform(X_test, "PCA")
+    X_approx_test = model.approx_emb(X_test, "approx")
 
     error_train = median_absolute_error(X_emb_train, X_approx_train)
     assert error_train <= 0.75
