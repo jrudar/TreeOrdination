@@ -137,6 +137,9 @@ class ResampleRandomizeTransform(BaseEstimator, TransformerMixin):
             if isinstance(self.transformer, type(None)) == False:
                 X_transform = self.transformer.transform(X_transform)
 
+            if X_transform.ndim == 1:
+                X_transform = np.asarray([X_transform])
+
             return X_transform
 
 
