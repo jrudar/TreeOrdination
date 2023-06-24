@@ -71,6 +71,3 @@ Rudar, J., Golding, G.B., Kremer, S.C., Hajibabaei, M. (2023). Decision Tree Ens
 Multivariate Splits Are Effective at Investigating Beta Diversity in Medically Relevant 16S Amplicon 
 Sequencing Data. Microbiology Spectrum e02065-22.
 
-Klaise J., Van Looveren A., Vacanti G., and Coca A. Alibi Explain: Algorithms for Explaining Machine
-Learning Models. Journal of Machine Learning Research. 2021;22(181):1-7.
-
