@@ -4,7 +4,7 @@ dependencies:
     - python >=3.8
     - pip
     - pip:
-        - LANDMarkClassifier >= 2.0.0
+        - LANDMarkClassifier >= 2.1.0
         - numpy == 1.23.5
         - scikit-learn >= 1.1.2
         - scikit-bio >= 0.5.8

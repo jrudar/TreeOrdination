@@ -16,18 +16,18 @@ class CLRClosureTransformer(BaseEstimator, TransformerMixin):
     def fit_transform(self, X, y=None, **kwargs):
 
         if self.do_clr:
-            return clr(multiplicative_replacement(closure(X), delta=self.delta))
+            return clr(multiplicative_replacement(closure(X), delta=self.delta)).astype(np.float32)
 
         else:
-            return closure(X)
+            return closure(X).astype(np.float32)
 
     def transform(self, X, y=None, **kwargs):
 
         if self.do_clr:
-            return clr(multiplicative_replacement(closure(X), delta=self.delta))
+            return clr(multiplicative_replacement(closure(X), delta=self.delta)).astype(np.float32)
 
         else:
-            return closure(X)
+            return closure(X).astype(np.float32)
 
 
 class ResampleRandomizeTransform(BaseEstimator, TransformerMixin):
