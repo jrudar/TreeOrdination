@@ -5,6 +5,9 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.base import ClassifierMixin, BaseEstimator, clone
 from sklearn.decomposition import PCA
 
+from scipy.sparse import csr_array
+from scipy.sparse import hstack as sp_hstack
+
 from umap import UMAP
 
 from LANDMark import LANDMarkClassifier
@@ -61,6 +64,7 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
         feature_names,
         resampler=None,
         metric="hamming",
+        prox_method = "terminal",
         supervised_clf=ExtraTreesClassifier(1024),
         proxy_model = ExtraTreesRegressor(1024),
         landmark_model = LANDMarkClassifier(160, use_nnet=False, n_jobs = 8),
@@ -76,6 +80,7 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
         self.resampler = resampler
 
         self.metric = metric
+        self.prox_method = prox_method
 
         self.supervised_clf = supervised_clf
         self.proxy_model = proxy_model
@@ -117,20 +122,22 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
 
             # Get proximity
             X_trf = resampler.transform(X)
-            self.LM_emb.append(model.proximity(X_trf))
+
+            # Update Overall Proximity
+            if i > 0:
+                self.LM_emb = sp_hstack((self.LM_emb, model.proximity(X_trf, self.prox_method)))
+            else:
+                self.LM_emb = model.proximity(X_trf, self.prox_method)
 
             # Save the resampler
             self.transformers.append(resampler)
-
-        # Get Overall Proximity
-        self.LM_emb = np.hstack(self.LM_emb)
 
         # Get Embeddings
         self.UMAP_trf = UMAP(
             n_neighbors=self.n_neighbors,
             n_components=15,
             min_dist=self.min_dist,
-            metric=self.metric,
+            metric="hamming",
             densmap=False,
         ).fit(self.LM_emb)
 
@@ -248,7 +255,7 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
 
     def predict_proba(self, X):
 
-        tree_emb = self.emb_transform(X, "LM")
+        tree_emb = self.emb_transform(X, "UMAP")
 
         P = self.p_model.predict_proba(tree_emb)
 
@@ -281,11 +288,10 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
                 transformer = self.transformers[i]
 
                 # Get proximity
-                proximity = model.proximity(transformer.transform(X))
-
-                tree_emb.append(proximity)
-
-            tree_emb = np.hstack(tree_emb)
+                if i != 0:
+                    tree_emb = sp_hstack((tree_emb, model.proximity(transformer.transform(X), self.prox_method)))
+                else:
+                    tree_emb = model.proximity(transformer.transform(X), self.prox_method)
 
             if trf_type == "LM":
                 return tree_emb
