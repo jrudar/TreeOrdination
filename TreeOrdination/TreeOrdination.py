@@ -40,7 +40,10 @@ def basic_transform(X, transformer, exclude_col):
         X_no_transform = X_in[:, excl_range]
 
         if X_transformed.ndim == 1:
-            X_transformed = [X_transformed]
+            X_transformed = X_transformed.reshape(-1,1)
+
+        if X_no_transform.ndim == 1:
+             X_no_transform = X_no_transform.rehsape(-1,1)
 
         X_transformed = np.hstack((X_transformed, X_no_transform))
 
