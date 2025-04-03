@@ -10,7 +10,7 @@ from scipy.sparse import hstack as sp_hstack
 
 from umap import UMAP
 
-from LANDMark import LANDMarkClassifier
+from LANDMarkClassifier import LANDMarkClassifier
 
 from matplotlib import pyplot as plt
 
