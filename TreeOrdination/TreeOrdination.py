@@ -128,9 +128,9 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
 
             # Update Overall Proximity
             if i > 0:
-                self.LM_emb = sp_hstack((self.LM_emb, model.proximity(X_trf, self.prox_method)))
+                self.LM_emb = np.hstack((self.LM_emb, model.proximity(X_trf, self.prox_method))).astype(np.int8) #sp_hstack((self.LM_emb, model.proximity(X_trf, self.prox_method)))
             else:
-                self.LM_emb = model.proximity(X_trf, self.prox_method)
+                self.LM_emb = model.proximity(X_trf, self.prox_method).astype(np.int8)
 
             # Save the resampler
             self.transformers.append(resampler)
@@ -292,7 +292,7 @@ class TreeOrdination(ClassifierMixin, BaseEstimator):
 
                 # Get proximity
                 if i != 0:
-                    tree_emb = sp_hstack((tree_emb, model.proximity(transformer.transform(X), self.prox_method)))
+                    tree_emb = np.hstack((tree_emb, model.proximity(transformer.transform(X), self.prox_method)))#sp_hstack((tree_emb, model.proximity(transformer.transform(X), self.prox_method)))
                 else:
                     tree_emb = model.proximity(transformer.transform(X), self.prox_method)
 
