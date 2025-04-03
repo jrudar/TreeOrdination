@@ -14,15 +14,16 @@ jobs:
         python-version: [3.11, 3.12, 3.13]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: conda-incubator/setup-miniconda@v3
       with:
-        miniforge-variant: Mambaforge
-        miniforge-version: latest
+        #miniforge-variant: Mambaforge
+        #miniforge-version: latest
+        miniconda-version: "latest"
         activate-environment: TreeOrdination
         channel-priority: strict
         environment-file: environment.yml
-        use-mamba: true
+        #use-mamba: true
 
     - name: Install dependencies
       run: |
