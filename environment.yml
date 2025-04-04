@@ -1,13 +1,12 @@
 name: TreeOrdination
 
 dependencies:
-    - python >=3.11
+    - python >=3.11, <3.13
     - pip
     - pip:
         - LANDMarkClassifier >= 2.1.0
-        - numpy >= 1.23.5
-        - scikit-learn >= 1.1.2
-        - scikit-bio >= 0.5.8
-        - umap-learn >= 0.5.3
-        - shap >= 0.40.0
+        - numpy >= 2.1.3
+        - scikit-learn >= 1.6.1
+        - umap-learn >= 0.5.7
+        - shap >= 0.47.1
         - seaborn

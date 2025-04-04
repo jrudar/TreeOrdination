@@ -32,36 +32,37 @@ class ExplainImportance:
 
         Adapted from: https://docs.seldon.io/projects/alibi/en/stable/examples/path_dependent_tree_shap_adult_xgb.html
         """
-        # Calculate importances
-        feat_imp = self.explainer.shap_values(X)[axis]
+        # Calculate importances (samples, features, outputs or samples, features)
+        feat_imp = self.explainer.shap_values(X)#[:, :, axis]
 
         # Determine if Global or Local feature importances are to be printed
         # Determine how SHAP values are to be sumarized across multiple samples from each class
-        if feat_imp.ndim == 2:
+        if feat_imp.ndim > 2:
             overview = "Global"
 
             ylabel = "Feature Name"
 
             if summary == "median":
-                feat_imp = np.median(feat_imp, axis=0)
+                feat_imp = np.median(feat_imp, axis=0)[:, axis]
                 xlabel = "Median(SHAP Values)"
 
             elif summary == "mean":
-                feat_imp = np.mean(feat_imp, axis=0)
+                feat_imp = np.mean(feat_imp, axis=0)[:, axis]
                 xlabel = "Mean(SHAP Values)"
 
             elif summary == "abs_median":
-                feat_imp = np.median(np.abs(feat_imp), axis=0)
+                feat_imp = np.median(np.abs(feat_imp), axis=0)[:, axis]
                 xlabel = "Median(|SHAP Values|)"
 
             elif summary == "abs_mean":
-                feat_imp = np.mean(np.abs(feat_imp), axis=0)
+                feat_imp = np.mean(np.abs(feat_imp), axis=0)[:, axis]
                 xlabel = "Mean(|SHAP Values|)"
 
-        elif feat_imp.ndim == 1:
+        else:
             overview = "Local"
             xlabel = "SHAP Values"
             ylabel = "Feature Name (Magnitude)"
+            feat_imp = feat_imp[:, axis]
             prediction = self.model.predict([X])[0][axis]
 
         # Sort Features
