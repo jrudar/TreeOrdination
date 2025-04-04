@@ -3,9 +3,6 @@
 
 Implementation of a wrapper which creates unsupervised projections using LANDMark and UMAP.
     
-### Install Dependencies
-The LANDMark package is needed for TreeOrdination to work. It is available at: https://github.com/jrudar/LANDMark
-
 ### Install
 From PyPI:
 
