@@ -71,3 +71,9 @@ Rudar, J., Golding, G.B., Kremer, S.C., Hajibabaei, M. (2023). Decision Tree Ens
 Multivariate Splits Are Effective at Investigating Beta Diversity in Medically Relevant 16S Amplicon 
 Sequencing Data. Microbiology Spectrum e02065-22.
 
+Jai Ram Rideout, Greg Caporaso, Evan Bolyen, Daniel McDonald, Yoshiki Vázquez Baeza, Jorge Cañardo
+Alastuey, Anders Pitman, Jamie Morton, Qiyun Zhu, Jose Navas, Kestrel Gorlick, Justine Debelius, 
+Zech Xu, Matt Aton, llcooljohn, Joshua Shorenstein, Laurent Luce, Will Van Treuren, John Chase, 
+… Dr. K. D. Murray. (2025). scikit-bio/scikit-bio: scikit-bio 0.6.3 (0.6.3). 
+Zenodo. https://doi.org/10.5281/zenodo.14640761
+
