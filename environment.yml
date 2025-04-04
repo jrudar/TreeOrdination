@@ -1,7 +1,7 @@
 name: TreeOrdination
 
 dependencies:
-    - python >=3.11, <3.13
+    - python >=3.11
     - pip
     - pip:
         - LANDMarkClassifier >= 2.1.0
