@@ -4,12 +4,16 @@ from TreeOrdination import (
     ResampleRandomizeTransform
 )
 
+from TreeOrdination.transformers_treeord import (
+    multiplicative_replacement,
+    closure,
+    clr
+)
+
 from sklearn.datasets import make_classification
 from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import balanced_accuracy_score, median_absolute_error
-
-from skbio.stats.composition import clr, closure, multiplicative_replacement
 
 import pandas as pd
 
@@ -108,6 +112,7 @@ def test_treeord_basic():
     model.plot_importance_global(X_test, y_test, 0, 10, 0)
     model.plot_importance_local(X_test[8], 10, 0)
 
+if __name__ == "__main__":
 
-test_transformers()
-test_treeord_basic()
+    test_transformers()
+    test_treeord_basic()
